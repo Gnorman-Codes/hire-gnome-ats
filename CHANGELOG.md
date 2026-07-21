@@ -4,6 +4,9 @@ This changelog captures the main recent product-facing changes shipped in Hire G
 
 ## [Unreleased]
 
+#### Added
+- Bulk resume upload: a new `Candidates → Bulk Upload` page and `POST /api/candidates/bulk-upload` endpoint accept up to 25 PDF/DOC/DOCX resumes at once, parse each into a candidate profile (name, email, phone, skills, experience, and searchable resume text), attach the source file, and return a per-file summary of created/duplicate/skipped/failed results. Files without a detectable email are reported as skipped rather than creating placeholder records. Resume parsing reuses the existing OpenAI parser with the deterministic fallback, so it works with or without an AI key.
+
 #### Changed
 - Candidate detail now includes a timeline-aware `Suggested Next Step` card in the snapshot area, with direct action links for likely recruiter follow-up.
 - Candidate names now display as `Last, First` in candidate-linked table/list views so sorting is more natural across candidates, submissions, interviews, placements, and job-order workspace lists.
