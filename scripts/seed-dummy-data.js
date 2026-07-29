@@ -87,7 +87,8 @@ const prisma = new PrismaClient().$extends({
 
 const PERSON_EMAIL_DOMAIN = 'demoats.com';
 const DIVISION_PREFIX = 'HG Seed - ';
-const DEFAULT_LOGIN_PASSWORD = String(process.env.AUTH_DEFAULT_PASSWORD || 'Welcome123!').trim() || 'Welcome123!';
+const configuredLoginPassword = String(process.env.AUTH_DEFAULT_PASSWORD || '').trim();
+const DEFAULT_LOGIN_PASSWORD = configuredLoginPassword.length >= 8 ? configuredLoginPassword : 'Welcome123!';
 const DEMO_SITE_NAME = 'Hire Gnome ATS';
 const DEMO_THEME_KEY = 'classic_blue';
 
@@ -976,6 +977,8 @@ async function cleanupSeedData() {
 async function main() {
 	console.log('Resetting and seeding realistic demo data...');
 	await cleanupSeedData();
+	const { hashPassword } = await import('../lib/password-auth.js');
+	const seededPasswordHash = await hashPassword(DEFAULT_LOGIN_PASSWORD);
 
 	const existingSystemSetting = await prisma.systemSetting.findFirst({
 		orderBy: { id: 'asc' },
@@ -1033,7 +1036,9 @@ async function main() {
 				email: buildSeedUserEmail(userSeed, i, userEmailState),
 				role: userSeed.role,
 				divisionId: division?.id ?? null,
-				isActive: true
+				isActive: true,
+				passwordHash: seededPasswordHash,
+				passwordChangeRequired: false
 			}
 		});
 		users.push(created);
