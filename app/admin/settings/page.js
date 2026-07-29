@@ -74,6 +74,7 @@ export default function AdminSettingsPage() {
 	const [brandingSaving, setBrandingSaving] = useState(false);
 	const [platformSaving, setPlatformSaving] = useState(false);
 	const [demoMode, setDemoMode] = useState(false);
+	const [managedIntegrations, setManagedIntegrations] = useState(false);
 	const [form, setForm] = useState(initialForm);
 	const [savedForm, setSavedForm] = useState(initialForm);
 	const [logoFile, setLogoFile] = useState(null);
@@ -123,6 +124,7 @@ export default function AdminSettingsPage() {
 			}
 			if (cancelled) return;
 			setDemoMode(Boolean(data.demoMode));
+			setManagedIntegrations(Boolean(data.managedIntegrations));
 			committedThemeRef.current = data.themeKey || 'classic_blue';
 			setCurrentBranding({
 				siteName: data.siteName || '',
@@ -205,27 +207,32 @@ export default function AdminSettingsPage() {
 	);
 	const platformDirty = useMemo(
 		() =>
-			String(form.googleMapsApiKey || '') !== String(savedForm.googleMapsApiKey || '')
-			|| String(form.openAiApiKey || '') !== String(savedForm.openAiApiKey || '')
-			|| String(form.apiErrorLogRetentionDays || '') !== String(savedForm.apiErrorLogRetentionDays || '')
-			|| String(form.smtpHost || '') !== String(savedForm.smtpHost || '')
-			|| String(form.smtpPort || '') !== String(savedForm.smtpPort || '')
-			|| Boolean(form.smtpSecure) !== Boolean(savedForm.smtpSecure)
-			|| String(form.smtpUser || '') !== String(savedForm.smtpUser || '')
-			|| String(form.smtpPass || '') !== String(savedForm.smtpPass || '')
-			|| String(form.smtpFromName || '') !== String(savedForm.smtpFromName || '')
-			|| String(form.smtpFromEmail || '') !== String(savedForm.smtpFromEmail || '')
+			String(form.apiErrorLogRetentionDays || '') !== String(savedForm.apiErrorLogRetentionDays || '')
 			|| String(form.bullhornUsername || '') !== String(savedForm.bullhornUsername || '')
 			|| String(form.bullhornPassword || '') !== String(savedForm.bullhornPassword || '')
 			|| String(form.bullhornClientId || '') !== String(savedForm.bullhornClientId || '')
 			|| String(form.bullhornClientSecret || '') !== String(savedForm.bullhornClientSecret || '')
-			|| String(form.objectStorageProvider || '') !== String(savedForm.objectStorageProvider || '')
-			|| String(form.objectStorageRegion || '') !== String(savedForm.objectStorageRegion || '')
-			|| String(form.objectStorageBucket || '') !== String(savedForm.objectStorageBucket || '')
-			|| String(form.objectStorageEndpoint || '') !== String(savedForm.objectStorageEndpoint || '')
-			|| Boolean(form.objectStorageForcePathStyle) !== Boolean(savedForm.objectStorageForcePathStyle)
-			|| String(form.objectStorageAccessKeyId || '') !== String(savedForm.objectStorageAccessKeyId || '')
-			|| String(form.objectStorageSecretAccessKey || '') !== String(savedForm.objectStorageSecretAccessKey || ''),
+			|| (
+				!managedIntegrations
+				&& (
+					String(form.googleMapsApiKey || '') !== String(savedForm.googleMapsApiKey || '')
+					|| String(form.openAiApiKey || '') !== String(savedForm.openAiApiKey || '')
+					|| String(form.smtpHost || '') !== String(savedForm.smtpHost || '')
+					|| String(form.smtpPort || '') !== String(savedForm.smtpPort || '')
+					|| Boolean(form.smtpSecure) !== Boolean(savedForm.smtpSecure)
+					|| String(form.smtpUser || '') !== String(savedForm.smtpUser || '')
+					|| String(form.smtpPass || '') !== String(savedForm.smtpPass || '')
+					|| String(form.smtpFromName || '') !== String(savedForm.smtpFromName || '')
+					|| String(form.smtpFromEmail || '') !== String(savedForm.smtpFromEmail || '')
+					|| String(form.objectStorageProvider || '') !== String(savedForm.objectStorageProvider || '')
+					|| String(form.objectStorageRegion || '') !== String(savedForm.objectStorageRegion || '')
+					|| String(form.objectStorageBucket || '') !== String(savedForm.objectStorageBucket || '')
+					|| String(form.objectStorageEndpoint || '') !== String(savedForm.objectStorageEndpoint || '')
+					|| Boolean(form.objectStorageForcePathStyle) !== Boolean(savedForm.objectStorageForcePathStyle)
+					|| String(form.objectStorageAccessKeyId || '') !== String(savedForm.objectStorageAccessKeyId || '')
+					|| String(form.objectStorageSecretAccessKey || '') !== String(savedForm.objectStorageSecretAccessKey || '')
+				)
+			),
 		[
 			form.apiErrorLogRetentionDays,
 			form.googleMapsApiKey,
@@ -248,6 +255,7 @@ export default function AdminSettingsPage() {
 			form.bullhornPassword,
 			form.bullhornClientId,
 			form.bullhornClientSecret,
+			managedIntegrations,
 			savedForm.apiErrorLogRetentionDays,
 			savedForm.googleMapsApiKey,
 			savedForm.objectStorageAccessKeyId,
@@ -275,6 +283,7 @@ export default function AdminSettingsPage() {
 	const canSavePlatform = !demoMode && !loading && !platformSaving;
 
 	function buildFormFromSettings(data, fallback = initialForm) {
+		const integrationFallback = data.managedIntegrations ? initialForm : fallback;
 		return {
 			siteName: data.siteName || fallback.siteName || '',
 			themeKey: data.themeKey || fallback.themeKey || 'classic_blue',
@@ -290,30 +299,30 @@ export default function AdminSettingsPage() {
 			careerHeroBody: data.careerHeroBody ?? fallback.careerHeroBody ?? '',
 			apiErrorLogRetentionDays: String(data.apiErrorLogRetentionDays || fallback.apiErrorLogRetentionDays || 90),
 			removeLogo: false,
-			googleMapsApiKey: data.googleMapsApiKey ?? fallback.googleMapsApiKey ?? '',
-			openAiApiKey: data.openAiApiKey ?? fallback.openAiApiKey ?? '',
-			objectStorageProvider: data.objectStorageProvider || fallback.objectStorageProvider || 's3',
-			objectStorageRegion: data.objectStorageRegion || fallback.objectStorageRegion || 'us-east-1',
-			objectStorageBucket: data.objectStorageBucket ?? fallback.objectStorageBucket ?? '',
-			objectStorageEndpoint: data.objectStorageEndpoint ?? fallback.objectStorageEndpoint ?? '',
+			googleMapsApiKey: data.googleMapsApiKey ?? integrationFallback.googleMapsApiKey ?? '',
+			openAiApiKey: data.openAiApiKey ?? integrationFallback.openAiApiKey ?? '',
+			objectStorageProvider: data.objectStorageProvider || integrationFallback.objectStorageProvider || 's3',
+			objectStorageRegion: data.objectStorageRegion || integrationFallback.objectStorageRegion || 'us-east-1',
+			objectStorageBucket: data.objectStorageBucket ?? integrationFallback.objectStorageBucket ?? '',
+			objectStorageEndpoint: data.objectStorageEndpoint ?? integrationFallback.objectStorageEndpoint ?? '',
 			objectStorageForcePathStyle:
 				typeof data.objectStorageForcePathStyle === 'boolean'
 					? data.objectStorageForcePathStyle
-					: typeof fallback.objectStorageForcePathStyle === 'boolean'
-						? fallback.objectStorageForcePathStyle
+					: typeof integrationFallback.objectStorageForcePathStyle === 'boolean'
+						? integrationFallback.objectStorageForcePathStyle
 						: true,
-			objectStorageAccessKeyId: data.objectStorageAccessKeyId ?? fallback.objectStorageAccessKeyId ?? '',
-			objectStorageSecretAccessKey: data.objectStorageSecretAccessKey ?? fallback.objectStorageSecretAccessKey ?? '',
-			smtpHost: data.smtpHost ?? fallback.smtpHost ?? '',
-			smtpPort: data.smtpPort == null ? String(fallback.smtpPort ?? '') : String(data.smtpPort),
+			objectStorageAccessKeyId: data.objectStorageAccessKeyId ?? integrationFallback.objectStorageAccessKeyId ?? '',
+			objectStorageSecretAccessKey: data.objectStorageSecretAccessKey ?? integrationFallback.objectStorageSecretAccessKey ?? '',
+			smtpHost: data.smtpHost ?? integrationFallback.smtpHost ?? '',
+			smtpPort: data.smtpPort == null ? String(integrationFallback.smtpPort ?? '') : String(data.smtpPort),
 			smtpSecure:
 				typeof data.smtpSecure === 'boolean'
 					? data.smtpSecure
-					: Boolean(fallback.smtpSecure),
-			smtpUser: data.smtpUser ?? fallback.smtpUser ?? '',
-			smtpPass: data.smtpPass ?? fallback.smtpPass ?? '',
-			smtpFromName: data.smtpFromName ?? fallback.smtpFromName ?? data.siteName ?? fallback.siteName ?? '',
-			smtpFromEmail: data.smtpFromEmail ?? fallback.smtpFromEmail ?? '',
+					: Boolean(integrationFallback.smtpSecure),
+			smtpUser: data.smtpUser ?? integrationFallback.smtpUser ?? '',
+			smtpPass: data.smtpPass ?? integrationFallback.smtpPass ?? '',
+			smtpFromName: data.smtpFromName ?? integrationFallback.smtpFromName ?? data.siteName ?? fallback.siteName ?? '',
+			smtpFromEmail: data.smtpFromEmail ?? integrationFallback.smtpFromEmail ?? '',
 			bullhornUsername: data.bullhornUsername ?? fallback.bullhornUsername ?? '',
 			bullhornPassword: data.bullhornPassword ?? fallback.bullhornPassword ?? '',
 			bullhornClientId: data.bullhornClientId ?? fallback.bullhornClientId ?? '',
@@ -389,23 +398,25 @@ export default function AdminSettingsPage() {
 
 		setPlatformSaving(true);
 		const payload = new FormData();
-		payload.set('googleMapsApiKey', form.googleMapsApiKey);
-		payload.set('openAiApiKey', form.openAiApiKey);
 		payload.set('apiErrorLogRetentionDays', form.apiErrorLogRetentionDays || '90');
-		payload.set('objectStorageProvider', form.objectStorageProvider);
-		payload.set('objectStorageRegion', form.objectStorageRegion);
-		payload.set('objectStorageBucket', form.objectStorageBucket);
-		payload.set('objectStorageEndpoint', form.objectStorageEndpoint);
-		payload.set('objectStorageForcePathStyle', form.objectStorageForcePathStyle ? 'true' : 'false');
-		payload.set('objectStorageAccessKeyId', form.objectStorageAccessKeyId);
-		payload.set('objectStorageSecretAccessKey', form.objectStorageSecretAccessKey);
-		payload.set('smtpHost', form.smtpHost);
-		payload.set('smtpPort', form.smtpPort);
-		payload.set('smtpSecure', form.smtpSecure ? 'true' : 'false');
-		payload.set('smtpUser', form.smtpUser);
-		payload.set('smtpPass', form.smtpPass);
-		payload.set('smtpFromName', form.smtpFromName);
-		payload.set('smtpFromEmail', form.smtpFromEmail);
+		if (!managedIntegrations) {
+			payload.set('googleMapsApiKey', form.googleMapsApiKey);
+			payload.set('openAiApiKey', form.openAiApiKey);
+			payload.set('objectStorageProvider', form.objectStorageProvider);
+			payload.set('objectStorageRegion', form.objectStorageRegion);
+			payload.set('objectStorageBucket', form.objectStorageBucket);
+			payload.set('objectStorageEndpoint', form.objectStorageEndpoint);
+			payload.set('objectStorageForcePathStyle', form.objectStorageForcePathStyle ? 'true' : 'false');
+			payload.set('objectStorageAccessKeyId', form.objectStorageAccessKeyId);
+			payload.set('objectStorageSecretAccessKey', form.objectStorageSecretAccessKey);
+			payload.set('smtpHost', form.smtpHost);
+			payload.set('smtpPort', form.smtpPort);
+			payload.set('smtpSecure', form.smtpSecure ? 'true' : 'false');
+			payload.set('smtpUser', form.smtpUser);
+			payload.set('smtpPass', form.smtpPass);
+			payload.set('smtpFromName', form.smtpFromName);
+			payload.set('smtpFromEmail', form.smtpFromEmail);
+		}
 		payload.set('bullhornUsername', form.bullhornUsername);
 		payload.set('bullhornPassword', form.bullhornPassword);
 		payload.set('bullhornClientId', form.bullhornClientId);
@@ -430,7 +441,7 @@ export default function AdminSettingsPage() {
 	}
 
 	async function onSendTestEmail() {
-			if (demoMode || loading || platformSaving || brandingSaving || sendingTestEmail) return;
+			if (managedIntegrations || demoMode || loading || platformSaving || brandingSaving || sendingTestEmail) return;
 		setSendingTestEmail(true);
 
 		try {
@@ -794,11 +805,21 @@ export default function AdminSettingsPage() {
 						{activeTab === 'platform' ? (
 						<article className="panel panel-spacious panel-narrow">
 							<form onSubmit={onSavePlatformSettings} className="detail-form">
+							{managedIntegrations ? (
+								<section className="form-section">
+									<h4>Managed Hosting</h4>
+									<p className="panel-subtext">
+										Email delivery, AI, maps, and file storage are configured and maintained by your hosting provider.
+									</p>
+								</section>
+							) : null}
 							<section className="form-section">
-								<h4>Integrations</h4>
+								<h4>{managedIntegrations ? 'Platform Operations' : 'Integrations'}</h4>
 								{demoMode ? (
 									<p className="panel-subtext">Demo mode is enabled. Integration settings are read-only here.</p>
 								) : null}
+								{!managedIntegrations ? (
+									<>
 								<FormField label="Google Maps API Key" hint="Used for address autocomplete and place details. Leave blank to disable Google address lookup.">
 									<input
 										type="password"
@@ -819,6 +840,8 @@ export default function AdminSettingsPage() {
 										disabled={demoMode}
 									/>
 								</FormField>
+									</>
+								) : null}
 								<FormField label="API Error Log Retention (days)" hint="Old API error logs are automatically removed after this many days.">
 									<input
 										type="number"
@@ -833,6 +856,7 @@ export default function AdminSettingsPage() {
 								</FormField>
 							</section>
 
+							{!managedIntegrations ? (
 							<section className="form-section">
 								<h4>Email Delivery (SMTP)</h4>
 								<div className="form-grid-2">
@@ -926,8 +950,9 @@ export default function AdminSettingsPage() {
 									{emailTestSettings.emailTestMode
 										? `EMAIL_TEST_MODE is enabled. Outbound email is routed to ${emailTestSettings.emailTestRecipient || 'EMAIL_TEST_RECIPIENT'}.`
 										: 'Test email is sent to your signed-in administrator email address.'}
-								</p>
-							</section>
+									</p>
+								</section>
+							) : null}
 
 							<section className="form-section">
 								<h4>Bullhorn Export</h4>
@@ -980,6 +1005,7 @@ export default function AdminSettingsPage() {
 								</div>
 							</section>
 
+							{!managedIntegrations ? (
 							<section className="form-section">
 								<h4>Object Storage</h4>
 								<div className="form-grid-2">
@@ -1075,6 +1101,7 @@ export default function AdminSettingsPage() {
 									If S3 values are incomplete, uploads automatically fall back to local storage.
 								</p>
 							</section>
+							) : null}
 
 							<div className="form-actions">
 								<button type="submit" disabled={!canSavePlatform || !platformDirty}>

@@ -17,6 +17,10 @@ import {
 } from '@/lib/system-settings';
 import { DEFAULT_THEME_KEY, normalizeThemeKey } from '@/lib/theme-options';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
+import {
+	getAttemptedHostedManagedSettingKeys,
+	serializeClientVisibleAdminSettings
+} from '@/lib/hosted-managed-integrations';
 
 import { withApiLogging } from '@/lib/api-logging';
 export const dynamic = 'force-dynamic';
@@ -328,7 +332,7 @@ async function getSystem_settingsHandler(req) {
 
 	return NextResponse.json({
 		...branding,
-		...serializeAdminSystemSettings(setting),
+		...serializeClientVisibleAdminSettings(serializeAdminSystemSettings(setting)),
 		demoMode: DEMO_MODE
 	}, {
 		headers: { 'Cache-Control': 'no-store' }
@@ -351,6 +355,13 @@ async function patchSystem_settingsHandler(req) {
 
 	const existing = await getSystemSettingRecord();
 	const input = await parseBody(req);
+	const attemptedHostedManagedSettingKeys = getAttemptedHostedManagedSettingKeys(input.provided);
+	if (attemptedHostedManagedSettingKeys.length > 0) {
+		return NextResponse.json(
+			{ error: 'Integration settings are managed by your hosting provider.' },
+			{ status: 403 }
+		);
+	}
 	if (DEMO_MODE) {
 		const allowedDemoSettingKeys = new Set([
 			'siteName',
@@ -491,7 +502,7 @@ async function patchSystem_settingsHandler(req) {
 			ok: true,
 			message: 'Branding updated.',
 			...serializeSystemBranding(saved),
-			...serializeAdminSystemSettings(saved)
+			...serializeClientVisibleAdminSettings(serializeAdminSystemSettings(saved))
 		});
 	}
 
@@ -698,7 +709,7 @@ async function patchSystem_settingsHandler(req) {
 		ok: true,
 		message: 'System settings updated.',
 		...serializeSystemBranding(saved),
-		...serializeAdminSystemSettings(saved)
+		...serializeClientVisibleAdminSettings(serializeAdminSystemSettings(saved))
 	});
 }
 

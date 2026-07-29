@@ -4,6 +4,7 @@ import { AccessControlError, getActingUser } from '@/lib/access-control';
 import { isValidEmailAddress } from '@/lib/email-validation';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import { withApiLogging } from '@/lib/api-logging';
+import { hostedManagedIntegrationsEnabled } from '@/lib/hosted-managed-integrations';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +87,12 @@ async function postAdmin_system_settings_email_testHandler(req) {
 		}
 		if (actingUser.role !== 'ADMINISTRATOR') {
 			throw new AccessControlError('Only administrators can send a test email.', 403);
+		}
+		if (hostedManagedIntegrationsEnabled()) {
+			return NextResponse.json(
+				{ error: 'Email delivery settings are managed by your hosting provider.' },
+				{ status: 403 }
+			);
 		}
 
 		const body = await req.json().catch(() => ({}));

@@ -440,6 +440,7 @@ Use `.env` for:
 | `BOOTSTRAP_SITE_NAME` | `Hire Gnome ATS` | Initial site name created with a bootstrap-provisioned administrator. |
 | `BOOTSTRAP_THEME_KEY` | `classic_blue` | Initial theme created with a bootstrap-provisioned administrator. |
 | `HOSTED_CONFIG_FILE` | empty | Optional versioned hosted-instance JSON reconciled during container startup. |
+| `HOSTED_MANAGED_INTEGRATIONS` | `false` | Hides provider-owned SMTP, OpenAI, Google Maps, and object-storage configuration from tenant administrators and blocks API updates. Generated hosted environments set this to `true`. |
 
 #### Hosted Billing (Base + Seats)
 | Variable | Default | Purpose |

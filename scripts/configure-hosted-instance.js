@@ -148,6 +148,7 @@ function buildEnvironment(config, resolved, configPath, outputPath) {
 		BOOTSTRAP_SITE_NAME: config.instance.siteName,
 		BOOTSTRAP_THEME_KEY: cleanString(config.instance?.theme || 'classic_blue'),
 		SKIP_SYSTEM_SETTINGS_DB_DURING_BUILD: 'true',
+		HOSTED_MANAGED_INTEGRATIONS: 'true',
 		OPENAI_RESUME_MODEL: cleanString(openAi.model || 'gpt-4o-mini'),
 		EMAIL_TEST_MODE: String(operations.emailTestMode !== false),
 		EMAIL_TEST_RECIPIENT: cleanString(operations.emailTestRecipient || config.admin?.email).toLowerCase(),
