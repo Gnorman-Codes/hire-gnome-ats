@@ -97,30 +97,33 @@ function run() {
 	console.log('ATS Bootstrap');
 	console.log(`Project root: ${projectRoot}`);
 
-	if (!existsSync(envPath)) {
+	const hasEnvFile = existsSync(envPath);
+	const injectedConfig = {
+		...(hasEnvFile ? parseEnvFile(envPath) : {}),
+		...process.env
+	};
+
+	if (!hasEnvFile && checkRequiredEnv(injectedConfig).length > 0) {
 		console.log('No .env file found. Copying from .env.example...');
 		copyFileSync(envExamplePath, envPath);
 		console.log('Created .env from .env.example. Please update credentials before proceeding.');
 	}
 
-	const envFile = parseEnvFile(envPath);
-	const missing = checkRequiredEnv(envFile);
+	const config = existsSync(envPath)
+		? {
+			...parseEnvFile(envPath),
+			...process.env
+		}
+		: injectedConfig;
+	const missing = checkRequiredEnv(config);
 	if (missing.length > 0) {
 		console.log('Missing required env entries:', missing.join(', '));
-		console.log('Update .env with these values and re-run bootstrap.');
+		console.log('Set them in the environment or .env file and re-run bootstrap.');
 		process.exitCode = 1;
 		return;
 	}
-	if (!validateDatabaseUrl(envFile.DATABASE_URL)) {
+	if (!validateDatabaseUrl(config.DATABASE_URL)) {
 		console.log('DATABASE_URL is invalid or missing host/database.');
-		process.exitCode = 1;
-		return;
-	}
-
-	try {
-		runHealthSmokeCheck();
-	} catch (error) {
-		console.log('Prisma migrate status reported an issue. Resolve DB connectivity and rerun.');
 		process.exitCode = 1;
 		return;
 	}
@@ -137,6 +140,14 @@ function run() {
 		}
 	}
 
+	try {
+		runHealthSmokeCheck();
+	} catch (error) {
+		console.log('Prisma migrate status reported an issue. Resolve DB connectivity or migration state and rerun.');
+		process.exitCode = 1;
+		return;
+	}
+
 	if (skipAdminProvision) {
 		console.log('Skipping default admin provisioning due to --skip-admin-provision.');
 		console.log('Bootstrap complete. Start the app with npm run dev.');
@@ -144,7 +155,7 @@ function run() {
 	}
 
 	try {
-		runDefaultAdminProvision(envFile);
+		runDefaultAdminProvision(config);
 		console.log('Bootstrap complete. Start the app with npm run dev.');
 	} catch (error) {
 		console.log('Default admin provisioning failed.');

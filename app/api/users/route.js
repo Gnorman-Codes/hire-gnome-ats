@@ -134,6 +134,7 @@ async function postUsersHandler(req) {
 			data: {
 				...normalizeUserData(parsed.data),
 				passwordHash,
+				passwordChangeRequired: true,
 				...divisionAccess
 			},
 			select: userSelect

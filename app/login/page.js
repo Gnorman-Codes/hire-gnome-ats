@@ -64,14 +64,14 @@ function LoginPageContent() {
 			body: JSON.stringify(form)
 		});
 
+		const data = await res.json().catch(() => ({}));
 		if (!res.ok) {
-			const data = await res.json().catch(() => ({}));
 			toast.error(data.error || 'Login failed. Check your credentials and try again.');
 			setSaving(false);
 			return;
 		}
 
-		router.replace(nextPath);
+		router.replace(data?.user?.passwordChangeRequired ? '/account/password' : nextPath);
 		router.refresh();
 	}
 

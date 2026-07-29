@@ -24,6 +24,9 @@ prisma/dev.db-*
 .local-storage/
 .backups/
 .generated/
+hosted-instance.json
+hosted-instance.*.json
+!hosted-instance.example.json
 
 # Logs / reports
 *.log

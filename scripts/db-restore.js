@@ -10,7 +10,12 @@ const projectRoot = resolve(__dirname, '..');
 const envPath = join(projectRoot, '.env');
 
 function parseEnvFile(filePath) {
-	const raw = readFileSync(filePath, 'utf8');
+	let raw = '';
+	try {
+		raw = readFileSync(filePath, 'utf8');
+	} catch {
+		return {};
+	}
 	const values = {};
 
 	for (const line of raw.split(/\r?\n/)) {
@@ -150,9 +155,12 @@ async function run() {
 		throw new Error(`Backup file not found: ${inputPath}`);
 	}
 
-	const env = parseEnvFile(envPath);
+	const env = {
+		...parseEnvFile(envPath),
+		...process.env
+	};
 	if (!env.DATABASE_URL) {
-		throw new Error('DATABASE_URL is required in .env for restore.');
+		throw new Error('DATABASE_URL is required in the environment or .env for restore.');
 	}
 
 	let config;

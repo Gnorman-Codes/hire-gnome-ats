@@ -11,7 +11,12 @@ const envPath = join(projectRoot, '.env');
 const defaultBackupDir = process.env.DB_BACKUP_DIR || join(projectRoot, '.backups');
 
 function parseEnvFile(filePath) {
-	const raw = readFileSync(filePath, 'utf8');
+	let raw = '';
+	try {
+		raw = readFileSync(filePath, 'utf8');
+	} catch {
+		return {};
+	}
 	const values = {};
 
 	for (const line of raw.split(/\r?\n/)) {
@@ -94,9 +99,12 @@ function commandErrorMessage(commandResult) {
 }
 
 function backup() {
-	const env = parseEnvFile(envPath);
+	const env = {
+		...parseEnvFile(envPath),
+		...process.env
+	};
 	if (!env.DATABASE_URL) {
-		throw new Error('DATABASE_URL is required in .env for backup.');
+		throw new Error('DATABASE_URL is required in the environment or .env for backup.');
 	}
 
 	let config;

@@ -11,6 +11,7 @@ function serializeUser(user) {
 		lastName: user.lastName,
 		email: user.email,
 		role: user.role,
+		passwordChangeRequired: Boolean(user.passwordChangeRequired),
 		divisionId: user.divisionId,
 		division: user.division
 			? {

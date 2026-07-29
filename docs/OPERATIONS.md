@@ -1,5 +1,57 @@
 # Operations Runbook
 
+## 0) Hosted Docker Instance
+
+Copy and manually edit the customer-specific configuration:
+```bash
+cp hosted-instance.example.json hosted-instance.json
+chmod 600 hosted-instance.json
+```
+
+Set all required values and first-run users directly in `hosted-instance.json`, then start the stack:
+```bash
+npm run hosted:up -- --config hosted-instance.json
+```
+
+The launcher validates the JSON and privately renders the values Docker Compose requires. The generated `.env.hosted` is internal; never maintain it manually. Verify:
+```bash
+npm run hosted:status -- --config hosted-instance.json
+curl -fsS https://ats.customer.example/api/health
+```
+
+Provisioning creates missing divisions and users, skips existing email addresses, and never overwrites an existing account.
+
+The stack persists MySQL, local attachments, generated exports, SQL backups, and TLS state in named volumes. The `backup` service runs a backup immediately after the application becomes healthy and then every `DB_BACKUP_INTERVAL_SECONDS` seconds (default `86400`).
+
+After all users verify their first login:
+1. Have each user change their initial password.
+2. Remove the provisioned entries from the JSON `users` array.
+3. Set `admin.provisioningEnabled` to `false` and remove `admin.password` from `hosted-instance.json`.
+4. Rerun `npm run hosted:up -- --config hosted-instance.json`.
+
+Clearing the JSON users array removes the plaintext initial credentials only. It does not remove or modify the database users.
+
+To add or change an integration later, update only that section of `hosted-instance.json` and rerun `npm run hosted:up -- --config hosted-instance.json`. Missing properties are left unchanged; explicit `null` values clear nullable database-backed properties. Existing user records are always create-only through reconciliation.
+
+Run an immediate backup:
+```bash
+npm run hosted:backup -- --config hosted-instance.json
+```
+
+List backup files:
+```bash
+docker compose --env-file .env.hosted -f docker-compose.hosted.yml exec app \
+  find /app/.backups -maxdepth 1 -type f -name 'ats-backup-*.sql' -print
+```
+
+Copy a backup off-host:
+```bash
+docker compose --env-file .env.hosted -f docker-compose.hosted.yml cp \
+  app:/app/.backups/ats-backup-YYYYMMDD-HHMMSS.sql ./
+```
+
+Stopping the stack with `npm run hosted:down -- --config hosted-instance.json` preserves volumes. Do not add `--volumes` unless intentionally destroying the instance data.
+
 ## 1) Release Gate (CI)
 
 CI workflow file:

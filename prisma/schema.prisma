@@ -1,5 +1,6 @@
 generator client {
-	provider = "prisma-client-js"
+	provider      = "prisma-client-js"
+	binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -79,6 +80,7 @@ model User {
 	lastName         String
 	email            String      @unique
 	passwordHash     String?
+	passwordChangeRequired Boolean @default(false)
 	notifyCareerSiteApplications Boolean @default(true)
 	notifyClientPortalFeedback Boolean @default(true)
 	tableColumnPreferences Json?

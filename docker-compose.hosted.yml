@@ -1,0 +1,119 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ats}
+      MYSQL_USER: ${MYSQL_USER:-ats}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the hosted environment file}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the hosted environment file}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - backend
+
+  app:
+    image: ${HIRE_GNOME_IMAGE:-hire-gnome-ats:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ${HIRE_GNOME_ENV_FILE:-.env.hosted}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      LOCAL_STORAGE_ROOT: /app/.local-storage
+      DB_BACKUP_DIR: /app/.backups
+      HOSTED_CONFIG_FILE: /run/secrets/hosted_config
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - local_storage:/app/.local-storage
+      - database_backups:/app/.backups
+      - generated_exports:/app/.generated
+    secrets:
+      - hosted_config
+    group_add:
+      - "${HOSTED_CONFIG_GID:?Set HOSTED_CONFIG_GID in the hosted environment file}"
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - frontend
+      - backend
+
+  backup:
+    image: ${HIRE_GNOME_IMAGE:-hire-gnome-ats:local}
+    restart: unless-stopped
+    env_file:
+      - ${HIRE_GNOME_ENV_FILE:-.env.hosted}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        while true; do
+          node scripts/db-backup-scheduled.js --output /app/.backups;
+          sleep "$${DB_BACKUP_INTERVAL_SECONDS:-86400}";
+        done
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - database_backups:/app/.backups
+    networks:
+      - backend
+
+  caddy:
+    image: caddy:2.10-alpine
+    profiles: ["proxy"]
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in the hosted environment file}
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - frontend
+
+networks:
+  frontend:
+  backend:
+    internal: true
+
+volumes:
+  mysql_data:
+  local_storage:
+  database_backups:
+  generated_exports:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  hosted_config:
+    file: ${HOSTED_CONFIG_HOST_FILE:-./docker/hosted-instance.empty.json}

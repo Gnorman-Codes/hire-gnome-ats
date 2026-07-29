@@ -151,7 +151,15 @@ async function patchUsers_idHandler(req, { params }) {
 			where: { id },
 			data: {
 				...normalizeUserData(parsed.data),
-				...(passwordHash ? { passwordHash } : {}),
+				...(passwordHash
+					? {
+						passwordHash,
+						passwordChangeRequired: true,
+						sessionVersion: {
+							increment: 1
+						}
+					}
+					: {}),
 				...divisionAccess
 			},
 			select: userSelect

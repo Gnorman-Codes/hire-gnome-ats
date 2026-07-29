@@ -1,0 +1,17 @@
+.git
+.github
+.next
+.env
+.env.*
+!.env.example
+.local-storage
+.backups
+.generated
+hosted-instance.json
+hosted-instance.*.json
+!hosted-instance.example.json
+node_modules
+npm-debug.log*
+*.log
+Dockerfile*
+docker-compose*.yml

@@ -45,20 +45,20 @@ function timingSafeEqualString(a, b) {
 
 async function verifySessionToken(token) {
 	const rawToken = String(token || '').trim();
-	if (!rawToken) return false;
+	if (!rawToken) return null;
 
 	const parts = rawToken.split('.');
-	if (parts.length !== 2 || !parts[0] || !parts[1]) return false;
+	if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
 	const payloadSegment = parts[0];
 	const signatureSegment = parts[1];
 	const payload = safeParseTokenPayload(payloadSegment);
-	if (!payload || payload.v !== 'v1') return false;
+	if (!payload || payload.v !== 'v1') return null;
 
 	const userId = Number(payload.uid);
 	const expiresAtEpochSeconds = Number(payload.exp);
 	const nowEpochSeconds = Math.floor(Date.now() / 1000);
-	if (!Number.isInteger(userId) || userId <= 0) return false;
-	if (!Number.isInteger(expiresAtEpochSeconds) || expiresAtEpochSeconds <= nowEpochSeconds) return false;
+	if (!Number.isInteger(userId) || userId <= 0) return null;
+	if (!Number.isInteger(expiresAtEpochSeconds) || expiresAtEpochSeconds <= nowEpochSeconds) return null;
 
 	const sessionSecret = process.env.AUTH_SESSION_SECRET || 'dev-auth-session-secret-change-me';
 	const key = await crypto.subtle.importKey(
@@ -72,7 +72,10 @@ async function verifySessionToken(token) {
 		await crypto.subtle.sign('HMAC', key, encoder.encode(payloadSegment))
 	);
 	const expectedSignatureSegment = toBase64Url(signatureBytes);
-	return timingSafeEqualString(signatureSegment, expectedSignatureSegment);
+	if (!timingSafeEqualString(signatureSegment, expectedSignatureSegment)) return null;
+	return {
+		passwordChangeRequired: Boolean(payload.pc)
+	};
 }
 
 function isStaticAsset(pathname) {
@@ -166,7 +169,9 @@ export async function proxy(req) {
 	const forwardHeaders = buildForwardHeaders(req, requestId);
 
 	const token = req.cookies.get(AUTH_SESSION_COOKIE_NAME)?.value || '';
-	const isAuthenticated = await verifySessionToken(token);
+	const authenticatedSession = await verifySessionToken(token);
+	const isAuthenticated = Boolean(authenticatedSession);
+	const passwordChangeRequired = Boolean(authenticatedSession?.passwordChangeRequired);
 
 	if (pathname.startsWith('/api/')) {
 		if (isPublicApiPath(pathname)) {
@@ -175,12 +180,29 @@ export async function proxy(req) {
 		if (!isAuthenticated) {
 			return jsonWithRequestId({ error: 'Authentication required.' }, { status: 401 }, requestId);
 		}
+		if (
+			passwordChangeRequired
+			&& pathname !== '/api/session/change-password'
+			&& pathname !== '/api/session/logout'
+		) {
+			return jsonWithRequestId(
+				{
+					error: 'You must change your temporary password before continuing.',
+					code: 'PASSWORD_CHANGE_REQUIRED'
+				},
+				{ status: 403 },
+				requestId
+			);
+		}
 		return nextWithRequestId(forwardHeaders, requestId);
 	}
 
 	if (pathname === '/login') {
 		if (isAuthenticated) {
-			return redirectWithRequestId(new URL('/', req.url), requestId);
+			return redirectWithRequestId(
+				new URL(passwordChangeRequired ? '/account/password' : '/', req.url),
+				requestId
+			);
 		}
 		return nextWithRequestId(forwardHeaders, requestId);
 	}
@@ -196,6 +218,10 @@ export async function proxy(req) {
 			loginUrl.searchParams.set('next', nextValue);
 		}
 		return redirectWithRequestId(loginUrl, requestId);
+	}
+
+	if (passwordChangeRequired && pathname !== '/account/password') {
+		return redirectWithRequestId(new URL('/account/password', req.url), requestId);
 	}
 
 	return nextWithRequestId(forwardHeaders, requestId);

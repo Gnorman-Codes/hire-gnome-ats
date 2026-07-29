@@ -34,6 +34,7 @@ function serializeUser(user) {
 		lastName: user.lastName,
 		email: user.email,
 		role: user.role,
+		passwordChangeRequired: Boolean(user.passwordChangeRequired),
 		divisionId: user.divisionId,
 		division: user.division
 			? {
@@ -96,6 +97,7 @@ async function postLogin(req) {
 	}
 
 	let validPassword = false;
+	let passwordChangeRequired = Boolean(user.passwordChangeRequired);
 	if (user.passwordHash) {
 		validPassword = await verifyPassword(password, user.passwordHash);
 	} else {
@@ -104,8 +106,12 @@ async function postLogin(req) {
 			const nextPasswordHash = await hashPassword(password);
 			await prisma.user.update({
 				where: { id: user.id },
-				data: { passwordHash: nextPasswordHash }
+				data: {
+					passwordHash: nextPasswordHash,
+					passwordChangeRequired: true
+				}
 			});
+			passwordChangeRequired = true;
 		}
 	}
 
@@ -143,11 +149,15 @@ async function postLogin(req) {
 	}
 
 	const response = NextResponse.json({
-		user: serializeUser(user)
+		user: {
+			...serializeUser(user),
+			passwordChangeRequired
+		}
 	});
 	const token = createSessionToken({
 		userId: user.id,
 		sessionVersion: user.sessionVersion || 1,
+		passwordChangeRequired,
 		maxAgeSeconds: AUTH_SESSION_MAX_AGE_SECONDS
 	});
 	applySessionCookie(response, token, AUTH_SESSION_MAX_AGE_SECONDS);

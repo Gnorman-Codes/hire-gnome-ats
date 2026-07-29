@@ -109,6 +109,7 @@ async function postResetPassword(req) {
 				where: { id: resetToken.userId },
 				data: {
 					passwordHash,
+					passwordChangeRequired: false,
 					sessionVersion: {
 						increment: 1
 					},

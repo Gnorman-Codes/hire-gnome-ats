@@ -45,7 +45,7 @@ const modules = [
 	{ label: 'Archive', href: '/archive', icon: Archive }
 ];
 
-const AUTH_ROUTES = new Set(['/login', '/setup', '/forgot-password', '/reset-password']);
+const AUTH_ROUTES = new Set(['/login', '/setup', '/forgot-password', '/reset-password', '/account/password']);
 const CAREER_QUICK_LINKS = [
 	{ label: 'All Jobs', href: '/careers', quick: '' },
 	{ label: 'Remote', href: '/careers?quick=remote', quick: 'remote' },

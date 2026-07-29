@@ -146,6 +146,7 @@ async function postOnboarding_setupHandler(req) {
 					lastName: parsed.data.lastName,
 					email: parsed.data.email,
 					passwordHash,
+					passwordChangeRequired: false,
 					role: 'ADMINISTRATOR',
 					divisionId: defaultDivision.id,
 					isActive: true
@@ -193,6 +194,7 @@ async function postOnboarding_setupHandler(req) {
 		const token = createSessionToken({
 			userId: result.user.id,
 			sessionVersion: 1,
+			passwordChangeRequired: false,
 			maxAgeSeconds: AUTH_SESSION_MAX_AGE_SECONDS
 		});
 		applySessionCookie(response, token, AUTH_SESSION_MAX_AGE_SECONDS);

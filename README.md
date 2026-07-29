@@ -23,6 +23,7 @@ When demo mode is enabled, authenticated demo users see a one-time welcome modal
 - [Changelog](#changelog)
 - [User Documentation](#user-documentation)
 - [Quick Start](#quick-start)
+- [Hosted Docker Deployment](#hosted-docker-deployment)
 - [Onboarding And First Login](#onboarding-and-first-login)
 - [Configuration Model](#configuration-model)
 - [Environment Reference](#environment-reference)
@@ -140,6 +141,89 @@ If you are upgrading an existing DB, apply migrations first:
 ```bash
 npx prisma migrate deploy
 ```
+
+## Hosted Docker Deployment
+
+The hosted Compose stack runs one isolated Hire Gnome instance with:
+- the application,
+- MySQL 8.4,
+- Caddy with automatic HTTPS,
+- daily database backups with retention pruning,
+- persistent volumes for MySQL, local attachments, generated exports, backups, and Caddy state.
+
+Prerequisites:
+- a Linux host with Docker Engine and Docker Compose,
+- ports `80` and `443` open,
+- a DNS `A`/`AAAA` record for the customer hostname pointing to the host.
+
+Copy the example and edit the customer's single private configuration file:
+```bash
+cp hosted-instance.example.json hosted-instance.json
+chmod 600 hosted-instance.json
+```
+
+Set the domain, database passwords, runtime secrets, administrator, users, SMTP, S3, OpenAI, Stripe, and operational values directly in `hosted-instance.json`. Replace every applicable `CHANGE_ME_...` value. This JSON file is the customer instance's source of truth.
+
+Start the instance by feeding that JSON file to the hosted launcher:
+```bash
+npm run hosted:up -- --config hosted-instance.json
+```
+
+The launcher validates the JSON, generates Docker Compose's private runtime environment, mounts the original JSON into the application container, and starts the stack. You do not manually create or edit `.env.hosted`.
+
+Verify it:
+```bash
+npm run hosted:status -- --config hosted-instance.json
+curl -fsS https://ats.customer.example/api/health
+```
+
+The application container waits for MySQL, deploys Prisma migrations, reconciles the hosted JSON, and then starts Next.js. The JSON can configure branding, first-run users, SMTP, S3-compatible storage, OpenAI, Google Maps, billing runtime values, monitoring hooks, and operational settings.
+
+Configuration reconciliation rules:
+- A missing section or property leaves the current database-backed setting unchanged.
+- A newly supplied or changed integration property is applied the next time `hosted:up` is run with the JSON.
+- An explicit `null` clears a nullable integration property.
+- A new user email is created.
+- An existing user email is never overwritten.
+- A named missing division is created; an existing division is reused.
+- Stripe customer/subscription objects are never created or cancelled by reconciliation; the supplied identifiers tell Hire Gnome which existing Stripe resources to use.
+
+For example, Stripe can be omitted initially with `"billing": { "enabled": false }`. After creating the Stripe customer and subscription, add their identifiers to `hosted-instance.json`, then run:
+```bash
+npm run hosted:up -- --config hosted-instance.json
+```
+
+Run one manual synchronization from the Admin Billing screen after first enabling billing so the subscription seat quantity matches the already-provisioned users.
+
+After the first verified login:
+1. Change the administrator password from `Account Settings`.
+2. Have every additional user change their initial password.
+3. Remove the provisioned entries from the `users` array in `hosted-instance.json`.
+4. Set `admin.provisioningEnabled` to `false` and remove `admin.password` from `hosted-instance.json`.
+5. Run `npm run hosted:up -- --config hosted-instance.json` again.
+
+The generated `.env.hosted` is an internal artifact. Edit `hosted-instance.json`, not `.env.hosted`.
+
+Common operations:
+```bash
+npm run hosted:logs -- --config hosted-instance.json
+npm run hosted:backup -- --config hosted-instance.json
+npm run hosted:down -- --config hosted-instance.json
+```
+
+To update a customer instance, set `instance.image` in `hosted-instance.json` to a pinned published image tag and run:
+```bash
+npm run hosted:pull -- --config hosted-instance.json
+npm run hosted:up -- --config hosted-instance.json
+```
+
+Important:
+- Keep `hosted-instance.json` private and backed up in a secure secret store.
+- Keep `operations.emailTestMode` set to `true` until outbound email has been verified.
+- The included backup volume protects against application/container replacement, but copy backups off-host to protect against server loss.
+- Local attachment storage is durable in the included volume. Configure S3-compatible object storage in Admin settings when off-host file durability is required.
+- The default `hosted:up` flow assumes one customer stack per host because Caddy owns ports `80` and `443`.
+- To run multiple stacks on one host, use unique Compose project names and `APP_PORT` values, leave the `proxy` profile disabled, and route the customer domains through one shared host-level reverse proxy.
 
 ## Onboarding And First Login
 - There is no hardcoded seeded default admin user.
@@ -353,6 +437,9 @@ Use `.env` for:
 | `BOOTSTRAP_ADMIN_LAST_NAME` | `Administrator` | Last name for bootstrap-provisioned admin. |
 | `BOOTSTRAP_ADMIN_EMAIL` | empty | Email for bootstrap-provisioned admin (required when enabled). |
 | `BOOTSTRAP_ADMIN_PASSWORD` | empty | Password for bootstrap-provisioned admin (required when enabled, min 8 chars). |
+| `BOOTSTRAP_SITE_NAME` | `Hire Gnome ATS` | Initial site name created with a bootstrap-provisioned administrator. |
+| `BOOTSTRAP_THEME_KEY` | `classic_blue` | Initial theme created with a bootstrap-provisioned administrator. |
+| `HOSTED_CONFIG_FILE` | empty | Optional versioned hosted-instance JSON reconciled during container startup. |
 
 #### Hosted Billing (Base + Seats)
 | Variable | Default | Purpose |
@@ -412,6 +499,14 @@ All Node operational scripts in `scripts/` auto-load `.env` (and `.env.local` if
 | `npm run ci:smoke` | Permission/API smoke checks |
 | `npm run ci:test` | Preflight + build composite |
 | `npm run health` | Run health-check script |
+| `npm run hosted:up -- --config <file>` | Validate one hosted JSON file, then build and start its Docker stack |
+| `npm run hosted:status -- --config <file>` | Show the hosted stack status |
+| `npm run hosted:pull -- --config <file>` | Pull the configured hosted image |
+| `npm run hosted:down -- --config <file>` | Stop the hosted stack without deleting persistent volumes |
+| `npm run hosted:logs -- --config <file>` | Follow hosted application logs |
+| `npm run hosted:backup -- --config <file>` | Run an immediate hosted database backup |
+| `npm run hosted:init -- --domain ... --admin-email ...` | Optional helper that generates the JSON instead of editing the example manually |
+| `npm run hosted:user -- --first-name ...` | Optional helper that adds a user to the JSON |
 
 ## Operations
 - Runbook: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)

@@ -63,6 +63,7 @@ async function postSession_change_passwordHandler(req) {
 			id: true,
 			isActive: true,
 			passwordHash: true,
+			passwordChangeRequired: true,
 			sessionVersion: true
 		}
 	});
@@ -87,6 +88,7 @@ async function postSession_change_passwordHandler(req) {
 		where: { id: user.id },
 		data: {
 			passwordHash: nextPasswordHash,
+			passwordChangeRequired: false,
 			sessionVersion: {
 				increment: 1
 			}
@@ -110,6 +112,7 @@ async function postSession_change_passwordHandler(req) {
 	const token = createSessionToken({
 		userId: updatedUser.id,
 		sessionVersion: updatedUser.sessionVersion || 1,
+		passwordChangeRequired: false,
 		maxAgeSeconds: AUTH_SESSION_MAX_AGE_SECONDS
 	});
 	applySessionCookie(response, token, AUTH_SESSION_MAX_AGE_SECONDS);

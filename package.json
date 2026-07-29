@@ -25,6 +25,15 @@
 		"bootstrap": "node scripts/bootstrap.js",
 		"bootstrap:admin": "node scripts/provision-default-admin.js",
 		"health": "node scripts/health-check.js",
+		"hosted:init": "node scripts/create-hosted-config.js",
+		"hosted:configure": "node scripts/configure-hosted-instance.js",
+		"hosted:user": "node scripts/add-hosted-user.js",
+		"hosted:up": "node scripts/hosted-compose.js up",
+		"hosted:down": "node scripts/hosted-compose.js down",
+		"hosted:logs": "node scripts/hosted-compose.js logs",
+		"hosted:status": "node scripts/hosted-compose.js status",
+		"hosted:pull": "node scripts/hosted-compose.js pull",
+		"hosted:backup": "node scripts/hosted-compose.js backup",
 		"db:backup": "node scripts/db-backup.js --output .backups",
 		"db:backup:scheduled": "node scripts/db-backup-scheduled.js --output .backups",
 		"db:restore": "node scripts/db-restore.js",
@@ -39,7 +48,7 @@
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.1010.0",
 		"@fontsource/ibm-plex-mono": "^5.2.7",
-		"@prisma/client": "^6.19.2",
+		"@prisma/client": "^6.19.3",
 		"exceljs": "^4.4.0",
 		"jszip": "^3.10.1",
 		"lucide-react": "^0.577.0",
@@ -48,6 +57,7 @@
 		"next": "^16.1.7",
 		"nodemailer": "^8.0.2",
 		"pdf-parse": "^2.4.5",
+		"prisma": "^6.19.3",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4",
 		"react-markdown": "^10.1.0",
@@ -55,8 +65,5 @@
 		"stripe": "^20.4.1",
 		"word-extractor": "^1.0.4",
 		"zod": "^3.25.76"
-	},
-	"devDependencies": {
-		"prisma": "^6.19.2"
 	}
 }

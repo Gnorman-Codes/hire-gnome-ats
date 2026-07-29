@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "instance": {
+    "domain": "ats.customer.example",
+    "siteName": "Customer ATS",
+    "theme": "classic_blue",
+    "image": "hire-gnome-ats:local",
+    "localPort": 3000
+  },
+  "database": {
+    "name": "ats",
+    "user": "ats",
+    "password": "CHANGE_ME_DATABASE_PASSWORD",
+    "rootPassword": "CHANGE_ME_ROOT_DATABASE_PASSWORD"
+  },
+  "secrets": {
+    "authSession": "CHANGE_ME_LONG_RANDOM_SESSION_SECRET",
+    "clientPortal": "CHANGE_ME_LONG_RANDOM_PORTAL_SECRET",
+    "rateLimit": "CHANGE_ME_LONG_RANDOM_RATE_LIMIT_SECRET"
+  },
+  "admin": {
+    "provisioningEnabled": true,
+    "firstName": "Customer",
+    "lastName": "Administrator",
+    "email": "admin@customer.example",
+    "password": "CHANGE_ME_INITIAL_ADMIN_PASSWORD"
+  },
+  "users": [
+    {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane@customer.example",
+      "password": "CHANGE_ME_INITIAL_USER_PASSWORD",
+      "role": "RECRUITER",
+      "division": "Main",
+      "isActive": true
+    }
+  ],
+  "integrations": {
+    "smtp": {
+      "host": null,
+      "port": null,
+      "secure": false,
+      "user": null,
+      "password": null,
+      "fromName": null,
+      "fromEmail": null
+    },
+    "s3": {
+      "provider": "s3",
+      "region": "us-east-1",
+      "bucket": null,
+      "endpoint": null,
+      "forcePathStyle": false,
+      "accessKeyId": null,
+      "secretAccessKey": null
+    },
+    "openai": {
+      "apiKey": null,
+      "model": "gpt-4o-mini"
+    }
+  },
+  "billing": {
+    "enabled": false,
+    "stripeSecretKey": null,
+    "customerId": null,
+    "subscriptionId": null,
+    "basePriceId": null,
+    "seatPriceId": null,
+    "seatSubscriptionItemId": null,
+    "baseSubscriptionItemId": null,
+    "prorationBehavior": "create_prorations",
+    "currency": "usd"
+  },
+  "monitoring": {
+    "errorAlertWebhookUrl": null,
+    "healthAlertWebhookUrl": null,
+    "papertrailHost": null,
+    "papertrailPort": null
+  },
+  "operations": {
+    "emailTestMode": true,
+    "emailTestRecipient": "admin@customer.example",
+    "backupRetentionDays": 14,
+    "backupIntervalSeconds": 86400
+  }
+}
