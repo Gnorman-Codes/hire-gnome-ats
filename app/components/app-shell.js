@@ -30,6 +30,7 @@ import QuickCreateMenu from '@/app/components/quick-create-menu';
 import NotificationCenter from '@/app/components/notification-center';
 import { ToastProvider } from '@/app/components/toast-provider';
 import LoadingIndicator from '@/app/components/loading-indicator';
+import DemoWorkspaceRequest from '@/app/components/demo-workspace-request';
 import useSystemBranding from '@/app/hooks/use-system-branding';
 
 const modules = [
@@ -405,6 +406,12 @@ export default function AppShell({ children }) {
 					<header className="topbar">
 						<GlobalSearch />
 						<div className="topbar-controls">
+							<DemoWorkspaceRequest
+								demoMode={branding.demoMode}
+								userId={sessionState.authenticatedUser?.id}
+								pathname={pathname}
+								autoPromptEnabled={!demoWelcomeOpen}
+							/>
 							<QuickCreateMenu />
 							<NotificationCenter />
 							<div className="topbar-user-menu" ref={impersonationMenuRef}>

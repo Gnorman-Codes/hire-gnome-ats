@@ -258,6 +258,7 @@ Use `Admin Area > System Settings` for:
 When `DEMO_MODE` is enabled:
 - administrators can still save the full branding card
 - integrations, SMTP, and object storage settings remain read-only
+- authenticated visitors see a workspace-request CTA; after 8 active minutes across 3 main sections, a conversion prompt offers a Formspark-backed private-workspace request form
 
 System settings are split into:
 - `Branding`
@@ -422,6 +423,7 @@ Use `.env` for:
 | Variable | Default | Purpose |
 |---|---|---|
 | `DEMO_MODE` | `false` | Enables demo UI behavior (system settings read-only + demo credentials shown on login). |
+| `DEMO_WORKSPACE_FORMSPARK_URL` | empty | Server-only Formspark action URL used by the demo workspace-request form. |
 | `DEMO_ADMIN_EMAIL` | `admin@demoats.com` | Demo admin email shown on login when demo mode is enabled. |
 | `DEMO_RECRUITER_EMAIL` | `recruiter@demoats.com` | Demo recruiter email shown on login when demo mode is enabled. |
 | `DEMO_LOGIN_PASSWORD` | `Welcome123!` | Demo login password shown on login when demo mode is enabled. |
