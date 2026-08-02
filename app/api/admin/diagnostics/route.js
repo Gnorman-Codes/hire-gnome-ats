@@ -104,15 +104,7 @@ function formatDiagnosticsMarkdown(result) {
 
 function getBackupDirectoryPath() {
 	const raw = String(process.env.DB_BACKUP_DIR || '').trim();
-	if (!raw) {
-		return path.join(process.cwd(), '.backups');
-	}
-
-	if (path.isAbsolute(raw)) {
-		return raw;
-	}
-
-	return path.resolve(/* turbopackIgnore: true */ process.cwd(), raw);
+	return raw || path.join(process.cwd(), '.backups');
 }
 
 async function runDiagnostics() {
