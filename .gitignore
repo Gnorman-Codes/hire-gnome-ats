@@ -22,6 +22,7 @@ prisma/dev.db-*
 
 # Runtime storage / backups
 .local-storage/
+.runtime/
 .backups/
 .generated/
 hosted-instance.json

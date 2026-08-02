@@ -4,7 +4,7 @@
 require('./load-env.cjs');
 
 const path = require('node:path');
-const { unlink, readdir, stat } = require('node:fs/promises');
+const { opendir, rmdir, stat, unlink } = require('node:fs/promises');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -28,37 +28,6 @@ function normalizeStorageKey(value) {
 		.replace(/^\/+/, '');
 }
 
-async function collectFiles(rootDirectory) {
-	const files = [];
-	const pending = [rootDirectory];
-
-	while (pending.length > 0) {
-		const currentDirectory = pending.pop();
-		const entries = await readdir(currentDirectory, { withFileTypes: true });
-
-		for (const entry of entries) {
-			const absolutePath = path.join(currentDirectory, entry.name);
-			if (entry.isDirectory()) {
-				pending.push(absolutePath);
-				continue;
-			}
-			if (!entry.isFile()) continue;
-
-			const fileStats = await stat(absolutePath);
-			files.push({
-				absolutePath,
-				sizeBytes: Number(fileStats.size || 0)
-			});
-		}
-	}
-
-	return files;
-}
-
-function sumBytes(items) {
-	return items.reduce((total, item) => total + Number(item?.sizeBytes || 0), 0);
-}
-
 function formatBytes(value) {
 	const bytes = Number(value || 0);
 	if (bytes < 1024) return `${bytes} B`;
@@ -67,19 +36,120 @@ function formatBytes(value) {
 	return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 }
 
-function sampleKeys(items, limit = 15) {
-	return items.slice(0, limit).map((item) => item.storageKey);
+function pushSample(items, value, limit = 15) {
+	if (items.length < limit) items.push(value);
+}
+
+async function scanCandidateStorage({ candidateRoot, localStorageRoot, referencedByKey, shouldDelete }) {
+	const seenStorageKeys = new Set();
+	const samples = [];
+	const counters = {
+		totalFiles: 0,
+		totalBytes: 0,
+		referencedFiles: 0,
+		referencedBytes: 0,
+		orphanFiles: 0,
+		orphanBytes: 0,
+		seedFiles: 0,
+		seedBytes: 0,
+		inboundEmailFiles: 0,
+		inboundEmailBytes: 0,
+		directoriesVisited: 0,
+		emptyDirectories: 0,
+		deletedCount: 0,
+		deletedBytes: 0,
+		deleteErrors: 0,
+		prunedDirectories: 0,
+		pruneErrors: 0
+	};
+
+	async function walk(currentDirectory, isRoot = false) {
+		counters.directoriesVisited += 1;
+		let containsRemainingEntries = false;
+		let directory;
+		try {
+			directory = await opendir(currentDirectory);
+		} catch (error) {
+			if (error?.code === 'ENOENT' && isRoot) return false;
+			throw error;
+		}
+
+		for await (const entry of directory) {
+			const absolutePath = path.join(currentDirectory, entry.name);
+			if (entry.isDirectory()) {
+				if (await walk(absolutePath)) containsRemainingEntries = true;
+				continue;
+			}
+			if (!entry.isFile()) {
+				containsRemainingEntries = true;
+				continue;
+			}
+
+			const storageKey = normalizeStorageKey(path.relative(localStorageRoot, absolutePath));
+			const fileStats = await stat(absolutePath);
+			const sizeBytes = Number(fileStats.size || 0);
+			const isReferenced = referencedByKey.has(storageKey);
+			seenStorageKeys.add(storageKey);
+			counters.totalFiles += 1;
+			counters.totalBytes += sizeBytes;
+
+			if (storageKey.includes('/seed/')) {
+				counters.seedFiles += 1;
+				counters.seedBytes += sizeBytes;
+			}
+			if (storageKey.includes('/inbound-email/')) {
+				counters.inboundEmailFiles += 1;
+				counters.inboundEmailBytes += sizeBytes;
+			}
+
+			if (isReferenced) {
+				counters.referencedFiles += 1;
+				counters.referencedBytes += sizeBytes;
+				containsRemainingEntries = true;
+				continue;
+			}
+
+			counters.orphanFiles += 1;
+			counters.orphanBytes += sizeBytes;
+			pushSample(samples, storageKey);
+			if (!shouldDelete) {
+				containsRemainingEntries = true;
+				continue;
+			}
+			try {
+				await unlink(absolutePath);
+				counters.deletedCount += 1;
+				counters.deletedBytes += sizeBytes;
+			} catch {
+				counters.deleteErrors += 1;
+				containsRemainingEntries = true;
+			}
+		}
+
+		if (!containsRemainingEntries && !isRoot) {
+			counters.emptyDirectories += 1;
+			if (shouldDelete) {
+				try {
+					await rmdir(currentDirectory);
+					counters.prunedDirectories += 1;
+				} catch (error) {
+					if (error?.code !== 'ENOENT') counters.pruneErrors += 1;
+					return true;
+				}
+			}
+		}
+
+		return containsRemainingEntries;
+	}
+
+	await walk(candidateRoot, true);
+	return { counters, seenStorageKeys, samples };
 }
 
 async function main() {
 	const options = parseArgs(process.argv);
 	const localStorageRoot = path.resolve(getLocalStorageRoot());
 	const candidateRoot = path.join(localStorageRoot, 'candidates');
-
-	const diskFiles = (await collectFiles(candidateRoot)).map((file) => ({
-		...file,
-		storageKey: normalizeStorageKey(path.relative(localStorageRoot, file.absolutePath))
-	}));
 
 	const attachmentRows = await prisma.candidateAttachment.findMany({
 		where: {
@@ -101,34 +171,19 @@ async function main() {
 	const referencedByKey = new Map(
 		attachmentRows.map((row) => [normalizeStorageKey(row.storageKey), row])
 	);
-	const diskByKey = new Map(diskFiles.map((file) => [file.storageKey, file]));
-
-	const orphanFiles = diskFiles.filter((file) => !referencedByKey.has(file.storageKey));
+	const scan = await scanCandidateStorage({
+		candidateRoot,
+		localStorageRoot,
+		referencedByKey,
+		shouldDelete: options.delete
+	});
 	const missingFiles = attachmentRows
 		.map((row) => ({
 			...row,
 			storageKey: normalizeStorageKey(row.storageKey)
 		}))
-		.filter((row) => !diskByKey.has(row.storageKey));
-	const referencedFiles = diskFiles.filter((file) => referencedByKey.has(file.storageKey));
-	const seedFiles = diskFiles.filter((file) => file.storageKey.includes('/seed/'));
-	const inboundEmailFiles = diskFiles.filter((file) => file.storageKey.includes('/inbound-email/'));
-
-	let deletedCount = 0;
-	let deletedBytes = 0;
-	let deleteErrors = 0;
-
-	if (options.delete) {
-		for (const file of orphanFiles) {
-			try {
-				await unlink(file.absolutePath);
-				deletedCount += 1;
-				deletedBytes += Number(file.sizeBytes || 0);
-			} catch {
-				deleteErrors += 1;
-			}
-		}
-	}
+		.filter((row) => !scan.seenStorageKeys.has(row.storageKey));
+	const { counters } = scan;
 
 	const report = {
 		localStorageRoot,
@@ -139,25 +194,29 @@ async function main() {
 			missingFiles: missingFiles.length
 		},
 		disk: {
-			totalFiles: diskFiles.length,
-			totalBytes: sumBytes(diskFiles),
-			referencedFiles: referencedFiles.length,
-			referencedBytes: sumBytes(referencedFiles),
-			orphanFiles: orphanFiles.length,
-			orphanBytes: sumBytes(orphanFiles),
-			seedFiles: seedFiles.length,
-			seedBytes: sumBytes(seedFiles),
-			inboundEmailFiles: inboundEmailFiles.length,
-			inboundEmailBytes: sumBytes(inboundEmailFiles)
+			totalFiles: counters.totalFiles,
+			totalBytes: counters.totalBytes,
+			referencedFiles: counters.referencedFiles,
+			referencedBytes: counters.referencedBytes,
+			orphanFiles: counters.orphanFiles,
+			orphanBytes: counters.orphanBytes,
+			seedFiles: counters.seedFiles,
+			seedBytes: counters.seedBytes,
+			inboundEmailFiles: counters.inboundEmailFiles,
+			inboundEmailBytes: counters.inboundEmailBytes,
+			directoriesVisited: counters.directoriesVisited,
+			emptyDirectories: counters.emptyDirectories
 		},
 		deleteResult: {
-			deletedCount,
-			deletedBytes,
-			deleteErrors
+			deletedCount: counters.deletedCount,
+			deletedBytes: counters.deletedBytes,
+			deleteErrors: counters.deleteErrors,
+			prunedDirectories: counters.prunedDirectories,
+			pruneErrors: counters.pruneErrors
 		},
 		samples: {
-			orphanFiles: sampleKeys(orphanFiles),
-			missingFiles: sampleKeys(missingFiles)
+			orphanFiles: scan.samples,
+			missingFiles: missingFiles.slice(0, 15).map((item) => item.storageKey)
 		}
 	};
 
@@ -170,6 +229,8 @@ async function main() {
 	console.log(`[candidate-local-storage] Mode: ${report.mode}`);
 	console.log(`[candidate-local-storage] DB referenced attachments: ${report.db.referencedAttachmentRows}`);
 	console.log(`[candidate-local-storage] DB rows missing on disk: ${report.db.missingFiles}`);
+	console.log(`[candidate-local-storage] Directories visited: ${report.disk.directoriesVisited}`);
+	console.log(`[candidate-local-storage] Empty directories: ${report.disk.emptyDirectories}`);
 	console.log(`[candidate-local-storage] Disk files under candidates/: ${report.disk.totalFiles} (${formatBytes(report.disk.totalBytes)})`);
 	console.log(
 		`[candidate-local-storage] Referenced on disk: ${report.disk.referencedFiles} (${formatBytes(report.disk.referencedBytes)})`
@@ -189,6 +250,8 @@ async function main() {
 			`[candidate-local-storage] Deleted orphaned files: ${report.deleteResult.deletedCount} (${formatBytes(report.deleteResult.deletedBytes)})`
 		);
 		console.log(`[candidate-local-storage] Delete errors: ${report.deleteResult.deleteErrors}`);
+		console.log(`[candidate-local-storage] Pruned empty directories: ${report.deleteResult.prunedDirectories}`);
+		console.log(`[candidate-local-storage] Directory prune errors: ${report.deleteResult.pruneErrors}`);
 	} else {
 		console.log('[candidate-local-storage] Dry run only. Re-run with --delete to remove orphaned files.');
 	}
