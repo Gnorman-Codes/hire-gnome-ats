@@ -10,9 +10,9 @@ import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import { validateAndNormalizeCustomFieldValues } from '@/lib/custom-fields';
 import {
 	buildDefaultPlacementCommissionSplits,
-	getPlacementCommissionOwners,
-	toPlacementCommissionSplitCreateData
+	getPlacementCommissionOwners
 } from '@/lib/placement-commission';
+import { toPlacementCommissionSplitCreateData } from '@/lib/placement-commission-server';
 
 import { withApiLogging } from '@/lib/api-logging';
 const placementUserSelect = { id: true, firstName: true, lastName: true };

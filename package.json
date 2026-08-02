@@ -11,7 +11,7 @@
 		"db:logs": "docker compose -f docker-compose.dev.yml logs -f mysql",
 		"db:reset": "docker compose -f docker-compose.dev.yml down -v",
 		"prebuild": "node scripts/clean-next.js && prisma generate",
-		"build": "NODE_ENV=production next build",
+		"build": "NODE_ENV=production next build --webpack",
 		"build:deploy": "NODE_ENV=production npx prisma migrate deploy && npm run build",
 		"prestart": "prisma generate",
 		"start": "NODE_ENV=production next start",
