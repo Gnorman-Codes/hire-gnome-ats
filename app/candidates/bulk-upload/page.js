@@ -7,7 +7,7 @@ import { ArrowLeft, UploadCloud, X } from 'lucide-react';
 import { useToast } from '@/app/components/toast-provider';
 import {
 	BULK_RESUME_UPLOAD_MAX_FILES,
-	CANDIDATE_ATTACHMENT_MAX_BYTES,
+	RESUME_UPLOAD_MAX_BYTES,
 	isAllowedResumeUploadFileName,
 	resumeUploadAcceptString
 } from '@/lib/candidate-attachment-options';
@@ -42,7 +42,7 @@ export default function BulkResumeUploadPage() {
 	const [response, setResponse] = useState(null);
 
 	const maxMb = useMemo(
-		() => Math.floor(CANDIDATE_ATTACHMENT_MAX_BYTES / (1024 * 1024)),
+		() => Math.floor(RESUME_UPLOAD_MAX_BYTES / (1024 * 1024)),
 		[]
 	);
 
@@ -55,17 +55,21 @@ export default function BulkResumeUploadPage() {
 		for (const file of incoming) {
 			if (!isAllowedResumeUploadFileName(file.name)) {
 				rejected.push(`${file.name} (unsupported type)`);
-			} else if (file.size > CANDIDATE_ATTACHMENT_MAX_BYTES) {
+			} else if (file.size > RESUME_UPLOAD_MAX_BYTES) {
 				rejected.push(`${file.name} (over ${maxMb} MB)`);
 			} else {
 				accepted.push(file);
 			}
 		}
 
+		const remainingSlots = Math.max(0, BULK_RESUME_UPLOAD_MAX_FILES - files.length);
+		const acceptedWithinLimit = accepted.slice(0, remainingSlots);
+		const excessFiles = accepted.length - acceptedWithinLimit.length;
+
 		setFiles((current) => {
 			const seen = new Set(current.map((file) => `${file.name}:${file.size}`));
 			const merged = [...current];
-			for (const file of accepted) {
+			for (const file of acceptedWithinLimit) {
 				const key = `${file.name}:${file.size}`;
 				if (!seen.has(key)) {
 					seen.add(key);
@@ -77,6 +81,11 @@ export default function BulkResumeUploadPage() {
 
 		if (rejected.length > 0) {
 			toast.error(`Skipped ${rejected.length} file(s): ${rejected.join(', ')}`);
+		}
+		if (excessFiles > 0) {
+			toast.error(
+				`Skipped ${excessFiles} file${excessFiles === 1 ? '' : 's'}: you can upload up to ${BULK_RESUME_UPLOAD_MAX_FILES} resumes at a time.`
+			);
 		}
 	}
 
