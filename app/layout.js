@@ -4,6 +4,10 @@ import { ConfirmDialogProvider } from '@/app/components/confirm-dialog';
 import { getPublicAppBaseUrl } from '@/lib/site-url';
 import { DEFAULT_SITE_NAME, getSystemBranding } from '@/lib/system-settings';
 
+// Every app page is protected by session-aware proxy logic. Do not emit a shared
+// full-route cache entry that could outlive or cross an authenticated session.
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
 	const branding = await getSystemBranding();
 	const baseUrl = getPublicAppBaseUrl();
