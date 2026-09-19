@@ -90,6 +90,18 @@ async function apiGet(path, cookie) {
 	return { res, body };
 }
 
+async function bulkUpload(cookie, file, fileName) {
+	const formData = new FormData();
+	formData.append('files', file, fileName);
+	const res = await fetch(`${BASE_URL}/api/candidates/bulk-upload`, {
+		method: 'POST',
+		headers: { cookie },
+		body: formData
+	});
+	const body = await res.json().catch(() => ({}));
+	return { res, body };
+}
+
 async function ensureBaseUrlReachable() {
 	try {
 		const res = await fetch(`${BASE_URL}/api/health`);
@@ -208,6 +220,41 @@ async function run() {
 		const directorCookie = await loginAndGetCookie(director.email);
 		const recruiterACookie = await loginAndGetCookie(recruiterA.email);
 
+		const rootResponse = await fetch(`${BASE_URL}/`, { headers: { cookie: directorCookie } });
+		assert(rootResponse.ok, `Authenticated root page should load, got ${rootResponse.status}.`);
+		const cacheControl = String(rootResponse.headers.get('cache-control') || '');
+		assert(
+			/no-store/i.test(cacheControl),
+			`Authenticated root page must not be shared-cached, got Cache-Control: ${cacheControl || '(missing)'}.`
+		);
+		assert(
+			!rootResponse.headers.has('x-nextjs-cache') && !rootResponse.headers.has('x-nextjs-prerender'),
+			'Authenticated root page must not be served from the Next.js full-route cache.'
+		);
+
+		const imageUpload = await bulkUpload(
+			directorCookie,
+			new Blob(['not a resume'], { type: 'image/png' }),
+			'not-a-resume.png'
+		);
+		assert(imageUpload.res.status === 201, `Bulk upload should report a per-file result, got ${imageUpload.res.status}.`);
+		assert(
+			imageUpload.body.results?.[0]?.status === 'failed' &&
+				/Unsupported file type/.test(imageUpload.body.results[0].message || ''),
+			'Bulk upload must reject non-resume attachments at the API boundary.'
+		);
+
+		const oversizedResume = await bulkUpload(
+			directorCookie,
+			new Blob([new Uint8Array(8 * 1024 * 1024 + 1)], { type: 'application/pdf' }),
+			'oversized-resume.pdf'
+		);
+		assert(
+			oversizedResume.body.results?.[0]?.status === 'failed' &&
+				/8 MB limit/.test(oversizedResume.body.results[0].message || ''),
+			'Bulk upload must reject resumes over the parser limit before attempting extraction.'
+		);
+
 		const directorList = await apiGet('/api/clients', directorCookie);
 		assert(directorList.res.ok, `Director should be able to list clients, got ${directorList.res.status}: ${JSON.stringify(directorList.body)}`);
 		const directorVisibleIds = new Set(
@@ -238,7 +285,7 @@ async function run() {
 			`Director should get 404 for out-of-division client detail, got ${directorForbiddenDetail.res.status}.`
 		);
 
-		console.log('Permissions API smoke checks passed.');
+		console.log('Permissions, cache policy, and bulk-upload boundary smoke checks passed.');
 		console.log('Verified first-login password enforcement and session refresh.');
 		console.log(`Verified against ${BASE_URL}`);
 	} finally {
