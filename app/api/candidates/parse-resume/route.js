@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { parseResumeToDraft } from '@/lib/resume-parser';
 import { extractResumeTextFromFile } from '@/lib/resume-file-parser';
-import { parseResumeToDraftWithOpenAi } from '@/lib/openai-resume-parser';
-import { buildResumeSummaryText } from '@/lib/resume-summary';
+import { parseResumeDraft } from '@/lib/resume-parse-service';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import {
 	RESUME_PARSE_RATE_LIMIT_MAX_REQUESTS,
@@ -16,56 +14,6 @@ import { getActingUser } from '@/lib/access-control';
 const parseResumeSchema = z.object({
 	resumeText: z.string().min(40)
 });
-
-async function parseResumeDraft(resumeText) {
-	const openAiResult = await parseResumeToDraftWithOpenAi(resumeText);
-	if (openAiResult.ok) {
-		const draft = {
-			...openAiResult.draft,
-			summary: buildResumeSummaryText({
-				rawResumeText: resumeText,
-				draft: openAiResult.draft,
-				parsedSkills: openAiResult.parsedSkills || [],
-				educationRecords: openAiResult.educationRecords || [],
-				workExperienceRecords: openAiResult.workExperienceRecords || []
-			})
-		};
-
-		return {
-			draft,
-			warnings: openAiResult.warnings,
-			parsedSkills: openAiResult.parsedSkills || [],
-			educationRecords: openAiResult.educationRecords || [],
-			workExperienceRecords: openAiResult.workExperienceRecords || [],
-			parser: 'openai'
-		};
-	}
-
-	const fallbackResult = parseResumeToDraft(resumeText);
-	const warnings = [
-		...(openAiResult.warning ? [openAiResult.warning] : []),
-		...(Array.isArray(fallbackResult.warnings) ? fallbackResult.warnings : [])
-	];
-	const draft = {
-		...fallbackResult.draft,
-		summary: buildResumeSummaryText({
-			rawResumeText: resumeText,
-			draft: fallbackResult.draft,
-			parsedSkills: fallbackResult.parsedSkills || [],
-			educationRecords: fallbackResult.educationRecords || [],
-			workExperienceRecords: fallbackResult.workExperienceRecords || []
-		})
-	};
-
-	return {
-		draft,
-		warnings,
-		parsedSkills: fallbackResult.parsedSkills || [],
-		educationRecords: fallbackResult.educationRecords || [],
-		workExperienceRecords: fallbackResult.workExperienceRecords || [],
-		parser: 'fallback'
-	};
-}
 
 async function postParseResume(req) {
 	try {

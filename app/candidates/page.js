@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Filter, LayoutGrid, LayoutList, Plus, X } from 'lucide-react';
+import { Filter, LayoutGrid, LayoutList, Plus, UploadCloud, X } from 'lucide-react';
 import CandidateAdvancedSearchModal from '@/app/components/candidate-advanced-search-modal';
 import EntityTable from '@/app/components/entity-table';
 import SavedListViews from '@/app/components/saved-list-views';
@@ -389,6 +389,14 @@ export default function CandidatesPage() {
 					<h2>Candidates</h2>
 				</div>
 				<div className="module-header-actions">
+					<Link
+						href="/candidates/bulk-upload"
+						className="btn-link btn-link-icon"
+						aria-label="Bulk Upload Resumes"
+						title="Bulk Upload Resumes"
+					>
+						<UploadCloud aria-hidden="true" className="btn-refresh-icon-svg" />
+					</Link>
 					<Link
 						href="/candidates/new"
 						className="btn-link btn-link-icon"
