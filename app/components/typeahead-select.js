@@ -68,6 +68,9 @@ export default function TypeaheadSelect({
 	const [resolvedSelectedOption, setResolvedSelectedOption] = useState(null);
 	const activeSearchRequestRef = useRef(0);
 	const activeResolveRequestRef = useRef(0);
+	const lastValueRef = useRef(null);
+	const pendingUserValueRef = useRef(null);
+	const queryIsUserEditedRef = useRef(false);
 	const loadDepsKey = useMemo(() => JSON.stringify(loadDeps), [loadDeps]);
 	const asyncMode = typeof loadOptions === 'function';
 
@@ -153,6 +156,7 @@ export default function TypeaheadSelect({
 
 	useEffect(() => {
 		if (!value) {
+			activeResolveRequestRef.current += 1;
 			setResolvedSelectedOption(null);
 			return;
 		}
@@ -175,10 +179,28 @@ export default function TypeaheadSelect({
 	}, [loadOptionByValue, selectedOption, value]);
 
 	useEffect(() => {
-		setQuery(selectedOption?.label || '');
-	}, [selectedOption]);
+		const normalizedValue = value == null || value === '' ? '' : String(value);
+		const valueChanged = lastValueRef.current !== normalizedValue;
+		if (valueChanged) {
+			lastValueRef.current = normalizedValue;
+			const preserveUserQuery = pendingUserValueRef.current === normalizedValue;
+			pendingUserValueRef.current = null;
+			if (preserveUserQuery) return;
+			queryIsUserEditedRef.current = false;
+		}
+
+		if (!normalizedValue) {
+			if (!queryIsUserEditedRef.current) setQuery('');
+			return;
+		}
+
+		if (selectedOption?.label && !queryIsUserEditedRef.current) {
+			setQuery(selectedOption.label);
+		}
+	}, [selectedOption?.label, value]);
 
 	function onInputChange(nextValue) {
+		queryIsUserEditedRef.current = true;
 		setQuery(nextValue);
 		setOpen(true);
 		setCurrentPage(1);
@@ -186,6 +208,7 @@ export default function TypeaheadSelect({
 
 		if (!selectedOption) return;
 		if (nextValue !== selectedOption.label) {
+			pendingUserValueRef.current = '';
 			onChange('');
 			setResolvedSelectedOption(null);
 			onSelectOption?.(null);
@@ -193,6 +216,8 @@ export default function TypeaheadSelect({
 	}
 
 	function onOptionSelect(option) {
+		queryIsUserEditedRef.current = false;
+		pendingUserValueRef.current = null;
 		onChange(String(option.value));
 		setQuery(option.label);
 		setResolvedSelectedOption(option);
