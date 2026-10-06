@@ -709,3 +709,50 @@ OpenAI project hard limit as the independent billing safeguard.
 When paused, AI actions return “Monthly AI allowance reached” or a disabled
 message. Resume uploads continue through the built-in parser. Existing ATS
 records and non-AI workflows remain available.
+
+### Hosted trial access
+
+Configure an instance-wide trial in `hosted-instance.json`, independently of the
+monthly AI dollar allowance:
+
+```json
+"trial": {
+  "days": 14,
+  "startedAt": null,
+  "contactEmail": "hosting@example.com"
+}
+```
+
+`days` accepts an integer from 0 to 3650. The default, 0, leaves ATS access
+unlimited. A positive value grants full ATS access for that many 24-hour days;
+the configured AI dollar budget continues to apply. `hosted:init -- --trial-days 14`
+can include this trial configuration when generating a new instance.
+
+Run `npm run hosted:configure` and start/recreate the Docker app. The entrypoint
+initializes and saves the first trial start in MySQL before serving traffic.
+That start survives app/container restarts, rebuilds, and duration changes.
+For an existing instance, the countdown begins the first time a positive trial
+is initialized, rather than from the customer's original installation date.
+An explicit `startedAt` ISO timestamp with a timezone overrides the saved start;
+otherwise leave it null. All expiry calculations use UTC.
+
+At expiry, normal pages redirect to a trial-expired screen and operational API
+requests return HTTP 403 with `HOSTED_TRIAL_EXPIRED`. Careers, client-review
+links, inbound email processing, file downloads, exports, and administrative
+mutations are also paused. Expiry is checked on each server request; an open
+app checks every minute and redirects when expired. Already-running requests
+may finish. Customer administrators cannot change trial settings through the UI
+or API. The settings panel provides a read-only remaining-days/expiry summary.
+
+Login, logout, password recovery/change, read-only branding/session access,
+trial status, and health checks remain available. Database records and files
+are retained; backups continue. A malformed trial configuration or unavailable
+trial tracking database fails closed for normal use. The health endpoint keeps
+reporting infrastructure health so an expired trial does not disable backups
+or cause Docker restart loops.
+
+To extend access, increase `trial.days` or set an explicit new `trial.startedAt`,
+regenerate the environment and recreate the app. Set `trial.days` to 0 to remove
+the expiry when the customer is activated. No customer records are deleted.
+The generated Docker environment uses `HOSTED_TRIAL_DAYS`,
+`HOSTED_TRIAL_STARTED_AT`, and `HOSTED_TRIAL_CONTACT_EMAIL`.

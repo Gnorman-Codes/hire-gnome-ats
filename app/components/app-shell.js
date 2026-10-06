@@ -46,7 +46,7 @@ const modules = [
 	{ label: 'Archive', href: '/archive', icon: Archive }
 ];
 
-const AUTH_ROUTES = new Set(['/login', '/setup', '/forgot-password', '/reset-password', '/account/password']);
+const AUTH_ROUTES = new Set(['/trial-expired', '/login', '/setup', '/forgot-password', '/reset-password', '/account/password']);
 const CAREER_QUICK_LINKS = [
 	{ label: 'All Jobs', href: '/careers', quick: '' },
 	{ label: 'Remote', href: '/careers?quick=remote', quick: 'remote' },
@@ -88,6 +88,22 @@ export default function AppShell({ children }) {
 	const [mobileNavOpen, setMobileNavOpen] = useState(false);
 	const [demoWelcomeOpen, setDemoWelcomeOpen] = useState(false);
 	const impersonationMenuRef = useRef(null);
+
+ useEffect(() => {
+  if (isAuthRoute) return undefined;
+  let cancelled = false;
+  async function checkAccess() {
+   try {
+    const response = await fetch('/api/instance-access', { cache: 'no-store' });
+    const state = await response.json();
+    if (!cancelled && (!response.ok || state.expired)) window.location.assign('/trial-expired');
+   } catch { /* Server-side route checks still enforce expiry. */ }
+  }
+  checkAccess();
+  const timer = window.setInterval(checkAccess, 60000);
+  return () => { cancelled = true; window.clearInterval(timer); };
+ }, [isAuthRoute]);
+
 
 	useEffect(() => {
 		if (typeof document === 'undefined') return;

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AdminGate from '@/app/components/admin-gate';
 import AiUsageSettings from '@/app/components/ai-usage-settings';
+import HostedTrialSettings from '@/app/components/hosted-trial-settings';
 import { useConfirmDialog } from '@/app/components/confirm-dialog';
 import FormField from '@/app/components/form-field';
 import LoadingIndicator from '@/app/components/loading-indicator';
@@ -805,6 +806,7 @@ export default function AdminSettingsPage() {
 
 						{activeTab === 'platform' ? (
 						<article className="panel panel-spacious panel-narrow detail-form">
+							<HostedTrialSettings />
 							<AiUsageSettings demoMode={demoMode} />
 							<form onSubmit={onSavePlatformSettings} className="detail-form">
 							{managedIntegrations ? (

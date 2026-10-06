@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { readHostedTrialConfig } = require('../lib/hosted-trial-config.cjs');
 const ALLOWED_USER_ROLES = new Set(['ADMINISTRATOR', 'DIRECTOR', 'RECRUITER']);
 
 function readArgument(name, fallback = '') {
@@ -87,6 +88,12 @@ function validateConfig(config) {
 		emails.add(email);
 	}
 
+	readHostedTrialConfig({
+		HOSTED_TRIAL_DAYS: String(config.trial?.days ?? 0),
+		HOSTED_TRIAL_STARTED_AT: config.trial?.startedAt || '',
+		HOSTED_TRIAL_CONTACT_EMAIL: config.trial?.contactEmail || ''
+	});
+
 	if (normalizeBoolean(config.billing?.enabled, false)) {
 		requireString(config.billing?.stripeSecretKey, 'billing.stripeSecretKey');
 		requireString(config.billing?.customerId, 'billing.customerId');
@@ -149,6 +156,9 @@ function buildEnvironment(config, resolved, configPath, outputPath) {
 		BOOTSTRAP_THEME_KEY: cleanString(config.instance?.theme || 'classic_blue'),
 		SKIP_SYSTEM_SETTINGS_DB_DURING_BUILD: 'true',
 		HOSTED_MANAGED_INTEGRATIONS: 'true',
+		HOSTED_TRIAL_DAYS: String(config.trial?.days ?? 0),
+		HOSTED_TRIAL_STARTED_AT: cleanString(config.trial?.startedAt),
+		HOSTED_TRIAL_CONTACT_EMAIL: cleanString(config.trial?.contactEmail),
 		OPENAI_RESUME_MODEL: cleanString(openAi.model || 'gpt-4o-mini'),
 		OPENAI_MONTHLY_BUDGET_USD: String(openAi.monthlyBudgetUsd ?? 10),
 		OPENAI_ENABLED: String(openAi.enabled !== false),

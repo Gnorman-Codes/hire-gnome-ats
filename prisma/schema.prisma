@@ -925,3 +925,10 @@ model AiUsageRequest {
  completedAt DateTime?
  @@index([month, feature])
 }
+
+// One immutable first-trial start per hosted database. Provider runtime
+// configuration controls duration; customer settings never expose a write path.
+model HostedInstanceTrial {
+ id Int @id @default(1)
+ startedAt DateTime @default(now())
+}

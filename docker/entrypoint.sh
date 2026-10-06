@@ -35,5 +35,8 @@ node node_modules/prisma/build/index.js migrate deploy
 echo "[container] Initializing hosted tenant..."
 node scripts/provision-default-admin.js
 
+echo "[container] Initializing hosted trial..."
+node scripts/initialize-hosted-trial.js
+
 echo "[container] Starting Hire Gnome ATS..."
 exec "$@"

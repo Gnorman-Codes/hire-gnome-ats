@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { AUTH_SESSION_COOKIE_NAME } from '@/lib/security-constants';
+import { getHostedTrialStatus } from '@/lib/hosted-trial';
 
 const encoder = new TextEncoder();
 const REQUEST_ID_HEADER = 'x-request-id';
@@ -88,6 +89,7 @@ function isStaticAsset(pathname) {
 
 function isPublicPagePath(pathname) {
 	return (
+		pathname === '/trial-expired' ||
 		pathname === '/login' ||
 		pathname === '/setup' ||
 		pathname === '/forgot-password' ||
@@ -99,6 +101,7 @@ function isPublicPagePath(pathname) {
 
 function isPublicApiPath(pathname) {
 	return (
+		pathname === '/api/instance-access' ||
 		pathname === '/api/onboarding/status' ||
 		pathname === '/api/onboarding/setup' ||
 		pathname === '/api/health' ||
@@ -159,14 +162,42 @@ function redirectWithRequestId(url, requestId) {
 	return withResponseRequestId(NextResponse.redirect(url), requestId);
 }
 
+// Expiry is enforced before the general static-file shortcut and before
+// public-route handling. A suffix like .csv must not bypass the access gate.
+function isTrialStaticAsset(pathname) {
+ return pathname.startsWith('/_next/') || pathname.startsWith('/fonts/') ||
+  pathname.startsWith('/branding/') ||
+  ['/favicon.ico','/favicon.svg','/favicon-96x96.png','/apple-touch-icon.png',
+   '/site.webmanifest','/web-app-manifest-192x192.png','/web-app-manifest-512x512.png',
+   '/robots.txt'].includes(pathname);
+}
+function isTrialExempt(pathname, method) {
+ if (!pathname.startsWith('/api/')) return ['/trial-expired','/login','/forgot-password','/reset-password','/account/password'].includes(pathname);
+ if (['GET','HEAD'].includes(method)) return ['/api/health','/api/instance-access','/api/onboarding/status','/api/system-settings','/api/system-settings/logo','/api/session/acting-user'].includes(pathname);
+ if (method === 'POST') return ['/api/session/login','/api/session/logout','/api/session/forgot-password','/api/session/reset-password','/api/session/change-password'].includes(pathname);
+ return false;
+}
+
 export async function proxy(req) {
 	const { pathname, search } = req.nextUrl;
-	if (isStaticAsset(pathname)) {
-		return NextResponse.next();
-	}
+	if (isTrialStaticAsset(pathname)) return NextResponse.next();
 
 	const requestId = resolveRequestId(req);
 	const forwardHeaders = buildForwardHeaders(req, requestId);
+
+ let trial;
+ let trialUnavailable = false;
+ try { trial = await getHostedTrialStatus(); } catch { trialUnavailable = true; }
+ const trialRestricted = trialUnavailable || trial?.expired;
+ if (trialRestricted && !isTrialExempt(pathname, req.method)) {
+  if (pathname.startsWith('/api/')) return jsonWithRequestId({
+   error: trialUnavailable ? 'Instance access is unavailable. Contact your hosting provider.' : 'Your trial has expired. Contact your hosting provider to activate or extend access.',
+   code: trialUnavailable ? 'HOSTED_TRIAL_UNAVAILABLE' : 'HOSTED_TRIAL_EXPIRED',
+   expiresAt: trial?.expiresAt || null
+  }, { status: trialUnavailable ? 503 : 403, headers: { 'Cache-Control': 'no-store' } }, requestId);
+  return redirectWithRequestId(new URL('/trial-expired', req.url), requestId);
+ }
+ if (isStaticAsset(pathname) && !pathname.startsWith('/api/')) return NextResponse.next();
 
 	const token = req.cookies.get(AUTH_SESSION_COOKIE_NAME)?.value || '';
 	const authenticatedSession = await verifySessionToken(token);
@@ -200,7 +231,7 @@ export async function proxy(req) {
 	if (pathname === '/login') {
 		if (isAuthenticated) {
 			return redirectWithRequestId(
-				new URL(passwordChangeRequired ? '/account/password' : '/', req.url),
+				new URL(trialRestricted ? '/trial-expired' : passwordChangeRequired ? '/account/password' : '/', req.url),
 				requestId
 			);
 		}

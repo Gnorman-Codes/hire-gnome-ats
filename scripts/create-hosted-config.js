@@ -29,6 +29,8 @@ function run() {
 	const domain = requireArgument('domain').toLowerCase();
 	const adminEmail = requireArgument('admin-email').toLowerCase();
 	const siteName = readArgument('site-name', 'Hire Gnome ATS');
+	const trialDays = Number(readArgument('trial-days', '0'));
+	if (!Number.isInteger(trialDays) || trialDays < 0 || trialDays > 3650) throw new Error('--trial-days must be an integer from 0 to 3650.');
 	const adminPassword = randomSecret(12);
 	const config = {
 		version: 1,
@@ -58,6 +60,7 @@ function run() {
 			password: adminPassword
 		},
 		users: [],
+		trial: { days: trialDays, startedAt: null, contactEmail: '' },
 		integrations: {},
 		billing: {
 			enabled: false

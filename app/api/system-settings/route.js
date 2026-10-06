@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { getHostedTrialStatus } from '@/lib/hosted-trial';
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -321,7 +322,9 @@ async function getSystem_settingsHandler(req) {
 	const setting = await getSystemSettingRecord();
 	const branding = serializeSystemBranding(setting);
 	const actingUser = await getActingUser(req, { allowFallback: false });
-	if (actingUser?.role !== 'ADMINISTRATOR') {
+	let trialRestricted = false;
+	try { trialRestricted = (await getHostedTrialStatus()).expired; } catch { trialRestricted = true; }
+	if (trialRestricted || actingUser?.role !== 'ADMINISTRATOR') {
 		return NextResponse.json({
 			...branding,
 			demoMode: DEMO_MODE

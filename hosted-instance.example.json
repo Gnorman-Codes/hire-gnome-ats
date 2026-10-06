@@ -25,6 +25,11 @@
     "email": "admin@customer.example",
     "password": "CHANGE_ME_INITIAL_ADMIN_PASSWORD"
   },
+  "trial": {
+    "days": 0,
+    "startedAt": null,
+    "contactEmail": ""
+  },
   "users": [
     {
       "firstName": "Jane",
