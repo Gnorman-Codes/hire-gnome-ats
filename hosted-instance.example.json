@@ -57,7 +57,9 @@
     },
     "openai": {
       "apiKey": null,
-      "model": "gpt-4o-mini"
+      "model": "gpt-4o-mini",
+      "monthlyBudgetUsd": 10,
+      "enabled": true
     }
   },
   "billing": {

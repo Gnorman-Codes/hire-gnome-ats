@@ -46,6 +46,8 @@ model SystemSetting {
 	apiErrorLogRetentionDays Int @default(90)
 	googleMapsApiKey  String?  @db.Text
 	openAiApiKey      String?  @db.Text
+	aiMonthlyBudgetUsd Decimal @default(10) @db.Decimal(12, 6)
+	aiEnabled Boolean @default(true)
 	smtpHost          String?
 	smtpPort          Int?
 	smtpSecure        Boolean  @default(false)
@@ -898,4 +900,28 @@ model ZipCode {
 
 	@@index([zip])
 	@@map("zip")
+}
+
+model AiUsageMonth {
+ month String @id @db.VarChar(7)
+ spentUsd Decimal @default(0) @db.Decimal(16, 8)
+ reservedUsd Decimal @default(0) @db.Decimal(16, 8)
+ providerBlocked Boolean @default(false)
+ updatedAt DateTime @updatedAt
+}
+
+model AiUsageRequest {
+ id String @id @db.VarChar(36)
+ month String @db.VarChar(7)
+ feature String @db.VarChar(64)
+ model String @db.VarChar(128)
+ status String @db.VarChar(32)
+ reservedUsd Decimal @db.Decimal(16, 8)
+ costUsd Decimal @default(0) @db.Decimal(16, 8)
+ inputTokens Int @default(0)
+ cachedInputTokens Int @default(0)
+ outputTokens Int @default(0)
+ createdAt DateTime @default(now())
+ completedAt DateTime?
+ @@index([month, feature])
 }

@@ -652,3 +652,60 @@ This project is licensed under the GNU Affero General Public License v3.0 (`AGPL
 
 - Full text: [`LICENSE`](LICENSE)
 - SPDX identifier: `AGPL-3.0-only`
+
+### Monthly AI allowance
+
+Admin Settings → Platform shows monthly estimated AI spend, remaining dollars,
+pending reservations, AI status, and usage by feature. The default allowance is
+$10 per instance per UTC calendar month. Set `integrations.openai.monthlyBudgetUsd`
+to `5` in Muck Consultores' hosted JSON to match its OpenAI project cap. Run
+`npm run hosted:configure` and recreate the app container to apply runtime changes.
+Tracking starts with installation of this migration; it does not import earlier
+OpenAI spending or spending by other applications using the same key.
+
+Self-managed administrators can change the dollar allowance or disable AI
+in this panel. Hosted customer admins
+can view usage but cannot change provider controls. For hosted operations use:
+
+```json
+"openai": {
+  "apiKey": "YOUR_PROJECT_KEY",
+  "model": "gpt-4o-mini",
+  "monthlyBudgetUsd": 5,
+  "enabled": true
+}
+```
+
+Set `enabled` to `false` to disable AI immediately after runtime restart.
+To authorize additional usage, raise the dollar allowance and adjust the
+OpenAI project cap separately. A provider billing rejection pauses further
+requests for that month. Self-managed administrators can retry through the
+panel after correcting the provider limit or credits; hosted customers should
+contact their hosting provider to restore access.
+
+All seven features use one budgeted request handler. Before admission it
+reserves a conservative text-input estimate plus a 4,096-token output ceiling
+in MySQL, under a transaction lock shared across app processes. Each response
+records model, feature, token counts (including cached input), and estimated
+USD cost; prompt text, generated content, and API keys are not recorded.
+Unused reservation is released once accounting completes. A request may be
+refused slightly before the allowance is exhausted if its reservation cannot
+fit. In-flight requests finish if AI is disabled afterward.
+
+Standard text pricing for `gpt-4o-mini` and its dated snapshot is built in.
+For another model, provide all three `integrations.openai.pricing` values:
+`inputUsdPerMillion`, `cachedInputUsdPerMillion`, `outputUsdPerMillion`.
+Unknown pricing blocks AI until configured. Reconcile estimates against the
+OpenAI dashboard; prices may change and estimates are not invoices.
+Requests use the standard service tier to match this pricing.
+
+Network failures or responses without usage are conservatively charged at the
+reserved amount because OpenAI may have processed them. A process crash or
+accounting failure can leave a reservation pending; it remains included in
+remaining-budget calculations until an operator reconciles it against OpenAI
+billing. Do not automatically refund ambiguous requests. Keep a separate
+OpenAI project hard limit as the independent billing safeguard.
+
+When paused, AI actions return “Monthly AI allowance reached” or a disabled
+message. Resume uploads continue through the built-in parser. Existing ATS
+records and non-AI workflows remain available.

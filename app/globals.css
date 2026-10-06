@@ -5504,6 +5504,10 @@ button:disabled {
 	gap: 0.7rem;
 }
 
+.panel.detail-form {
+	display: grid;
+}
+
 .detail-form-fieldset {
 	margin: 0;
 	padding: 0;
@@ -11219,4 +11223,8 @@ small {
 		color: inherit !important;
 		text-decoration: none !important;
 	}
+}
+
+.ai-allowance-controls {
+	align-items: end;
 }

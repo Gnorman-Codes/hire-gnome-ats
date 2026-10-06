@@ -150,6 +150,13 @@ function buildEnvironment(config, resolved, configPath, outputPath) {
 		SKIP_SYSTEM_SETTINGS_DB_DURING_BUILD: 'true',
 		HOSTED_MANAGED_INTEGRATIONS: 'true',
 		OPENAI_RESUME_MODEL: cleanString(openAi.model || 'gpt-4o-mini'),
+		OPENAI_MONTHLY_BUDGET_USD: String(openAi.monthlyBudgetUsd ?? 10),
+		OPENAI_ENABLED: String(openAi.enabled !== false),
+		...(openAi.pricing ? {
+			OPENAI_INPUT_USD_PER_MILLION: String(openAi.pricing.inputUsdPerMillion ?? ''),
+			OPENAI_CACHED_INPUT_USD_PER_MILLION: String(openAi.pricing.cachedInputUsdPerMillion ?? ''),
+			OPENAI_OUTPUT_USD_PER_MILLION: String(openAi.pricing.outputUsdPerMillion ?? '')
+		} : {}),
 		EMAIL_TEST_MODE: String(operations.emailTestMode !== false),
 		EMAIL_TEST_RECIPIENT: cleanString(operations.emailTestRecipient || config.admin?.email).toLowerCase(),
 		POSTMARK_INBOUND_WEBHOOK_SECRET: cleanString(postmark.inboundWebhookSecret),
