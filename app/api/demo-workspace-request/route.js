@@ -5,7 +5,7 @@ import { withApiLogging } from '@/lib/api-logging';
 import { DEMO_MODE } from '@/lib/demo-config';
 import { logWarn, requestLogContext } from '@/lib/logger';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
-import { CURRENT_ATS_OPTIONS } from '@/lib/demo-workspace-options';
+import { CONTACT_REASON_OPTIONS } from '@/lib/demo-workspace-options';
 
 const SUBMITTED_COOKIE_NAME = 'hg_demo_workspace_requested';
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
@@ -15,21 +15,20 @@ const requestSchema = z.object({
 	lastName: z.string().trim().min(1).max(80),
 	workEmail: z.string().trim().email().max(254),
 	agencyName: z.string().trim().min(1).max(160),
-	teamSize: z.string().trim().min(1).max(40),
-	currentAts: z.string().trim().pipe(z.enum(CURRENT_ATS_OPTIONS.map((option) => option.value))),
-	note: z.string().trim().min(1).max(2000),
+	reason: z.string().trim().pipe(z.enum(CONTACT_REASON_OPTIONS)),
+	note: z.string().trim().max(2000).optional().default(''),
 	botpoisonSolution: z.string().trim().min(1).max(10000)
 });
 
 async function postDemoWorkspaceRequestHandler(req) {
 	if (!DEMO_MODE) {
-		return NextResponse.json({ error: 'Workspace requests are only available in the public demo.' }, { status: 404 });
+		return NextResponse.json({ error: 'Contact requests are only available in the public demo.' }, { status: 404 });
 	}
 	const formsparkSubmitUrl = String(process.env.DEMO_WORKSPACE_FORMSPARK_URL || '').trim();
 	if (!formsparkSubmitUrl) {
 		logWarn('demo.workspace_request.formspark_not_configured', requestLogContext(req));
 		return NextResponse.json(
-			{ error: 'Workspace requests are temporarily unavailable. Please try again later.' },
+			{ error: 'Contact requests are temporarily unavailable. Please try again later.' },
 			{ status: 503 }
 		);
 	}
@@ -50,7 +49,7 @@ async function postDemoWorkspaceRequestHandler(req) {
 	const parsed = requestSchema.safeParse(body);
 	if (!parsed.success) {
 		return NextResponse.json(
-			{ error: 'Complete every field, including your current ATS and a note about your agency’s needs, and provide a valid work email.' },
+			{ error: 'Complete the required fields, select what we can help with, and provide a valid work email.' },
 			{ status: 400 }
 		);
 	}
@@ -62,20 +61,19 @@ async function postDemoWorkspaceRequestHandler(req) {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			form_name: 'Demo Workspace Request',
-			request_type: 'Demo Workspace Request',
+			form_name: 'Demo Contact Request',
+			request_type: 'Demo Contact Request',
 			source: 'Hire Gnome Public Demo',
 			first_name: parsed.data.firstName,
 			last_name: parsed.data.lastName,
 			email: parsed.data.workEmail,
 			agency_name: parsed.data.agencyName,
-			team_size: parsed.data.teamSize,
-			current_ats: parsed.data.currentAts,
+			reason: parsed.data.reason,
 			notes: parsed.data.note,
 			demo_user_email: user.email || '',
 			_botpoison: parsed.data.botpoisonSolution,
 			_email: {
-				subject: 'Demo Workspace Request'
+				subject: 'Demo Contact Request'
 			}
 		}),
 		signal: AbortSignal.timeout(12000)

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Botpoison from '@botpoison/browser';
 import { CheckCircle2, Send, X } from 'lucide-react';
 import FormField from '@/app/components/form-field';
-import { CURRENT_ATS_OPTIONS } from '@/lib/demo-workspace-options';
+import { CONTACT_REASON_OPTIONS } from '@/lib/demo-workspace-options';
 
 const QUALIFYING_ACTIVE_MS = (process.env.NODE_ENV === 'development' ? 1 : 8) * 60 * 1000;
 const DISMISSAL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -26,19 +26,12 @@ const MAIN_SECTION_PATHS = [
 	'/reports',
 	'/archive'
 ];
-const TEAM_SIZE_OPTIONS = [
-	{ label: 'Solo recruiter', value: 'Solo recruiter' },
-	{ label: '2–5 recruiters', value: '2–5 recruiters' },
-	{ label: '6–15 recruiters', value: '6–15 recruiters' },
-	{ label: '16+ recruiters', value: '16+ recruiters' }
-];
 const EMPTY_FORM = {
 	firstName: '',
 	lastName: '',
 	workEmail: '',
 	agencyName: '',
-	teamSize: '',
-	currentAts: '',
+	reason: '',
 	note: ''
 };
 
@@ -142,9 +135,9 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 	async function submitRequest(event) {
 		event.preventDefault();
 		if (status === 'submitting' || submitted) return;
-		if (Object.values(form).some((value) => !value.trim())) {
+		if (['firstName', 'lastName', 'workEmail', 'agencyName', 'reason'].some((field) => !form[field].trim())) {
 			setStatus('error');
-			setMessage('Complete every field, including your current ATS and a note about your agency’s needs.');
+			setMessage('Complete the required fields and select what we can help with.');
 			return;
 		}
 		const requestData = Object.fromEntries(new FormData(event.currentTarget));
@@ -176,7 +169,7 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 		window.localStorage.setItem(SUBMITTED_KEY, '1');
 		setSubmitted(true);
 		setStatus('success');
-		setMessage(data?.duplicate ? 'We already have your workspace request.' : 'Your workspace request has been sent. We will be in touch soon.');
+		setMessage(data?.duplicate ? 'We already have your contact request.' : 'We’ll reach out within one business day. No pitch, just next steps.');
 		setView('success');
 	}
 
@@ -189,10 +182,10 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 				className="btn-secondary demo-workspace-cta"
 				onClick={openRequestForm}
 				disabled={submitted}
-				title={submitted ? 'Workspace request received' : 'Request a private Hire Gnome workspace'}
+				title={submitted ? 'Contact request received' : 'Contact Hire Gnome'}
 			>
 				{submitted ? <CheckCircle2 aria-hidden="true" /> : <Send aria-hidden="true" />}
-				<span>{submitted ? 'Workspace requested' : 'Request a workspace'}</span>
+				<span>{submitted ? 'Request sent' : 'Let’s Talk'}</span>
 			</button>
 
 			{open ? createPortal((
@@ -210,14 +203,14 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 								{view === 'success'
 									? 'Request received'
 									: view === 'form'
-										? 'Get Your Workspace'
-										: 'Ready to try Hire Gnome with your own data?'}
+										? 'Let’s Talk'
+										: 'Ready to talk about Hire Gnome?'}
 							</h3>
 							{view !== 'success' ? (
 								<p className="panel-subtext">
 									{view === 'form'
-										? 'No sales call. No pitch deck. Just tell us about your agency and your workspace will be up and running within one business day — free for the first 14 days.'
-										: 'Request a private Hire Gnome workspace with a clean database for your agency.'}
+										? 'No sales call. No pitch deck. Tell us what you need and we’ll get back to you within one business day.'
+										: 'Tell us what you need and we’ll help with next steps.'}
 								</p>
 							) : null}
 						</div>
@@ -226,7 +219,7 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 							className="btn-secondary btn-link-icon report-detail-modal-close"
 							onClick={dismiss}
 							disabled={status === 'submitting'}
-							aria-label="Close workspace request"
+							aria-label="Close contact request"
 							title="Close"
 						>
 							<X aria-hidden="true" />
@@ -236,14 +229,22 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 					{view === 'prompt' ? (
 						<div className="demo-workspace-actions">
 							<button type="button" className="btn-secondary" onClick={dismiss}>Keep exploring</button>
-							<button type="button" className="btn-primary" onClick={() => setView('form')}>Request a workspace</button>
+							<button type="button" className="btn-primary" onClick={() => setView('form')}>Let’s Talk</button>
 						</div>
 					) : null}
 
 					{view === 'form' ? (
 						<form className="demo-workspace-form" onSubmit={submitRequest}>
 							<input type="hidden" name="source" value="Hire Gnome Public Demo" />
-							<p className="panel-subtext">All fields are required.</p>
+							<p className="panel-subtext">Fields marked * are required.</p>
+							<FormField label="What can we help with?" required>
+								<select name="reason" aria-label="What can we help with?" value={form.reason} onChange={updateField} required>
+									<option value="">Select...</option>
+									{CONTACT_REASON_OPTIONS.map((option) => (
+										<option key={option} value={option}>{option}</option>
+									))}
+								</select>
+							</FormField>
 							<div className="form-grid-2">
 								<FormField label="First name" required>
 									<input name="firstName" aria-label="First name" value={form.firstName} onChange={updateField} autoComplete="given-name" required maxLength={80} />
@@ -258,32 +259,14 @@ export default function DemoWorkspaceRequest({ demoMode, userId, pathname, autoP
 							<FormField label="Agency name" required>
 								<input name="agencyName" aria-label="Agency name" value={form.agencyName} onChange={updateField} autoComplete="organization" required maxLength={160} />
 							</FormField>
-							<div className="form-grid-2">
-								<FormField label="Team size" required>
-									<select name="teamSize" aria-label="Team size" value={form.teamSize} onChange={updateField} required>
-										<option value="">Select...</option>
-										{TEAM_SIZE_OPTIONS.map((option) => (
-											<option key={option.value} value={option.value}>{option.label}</option>
-										))}
-									</select>
-								</FormField>
-								<FormField label="Current ATS" required>
-									<select name="currentAts" aria-label="Current ATS" value={form.currentAts} onChange={updateField} required>
-										<option value="">Select...</option>
-										{CURRENT_ATS_OPTIONS.map((option) => (
-											<option key={option.value} value={option.value}>{option.label}</option>
-										))}
-									</select>
-								</FormField>
-							</div>
-							<FormField label="Anything else we should know?" required>
-								<textarea name="note" aria-label="Anything else we should know?" value={form.note} onChange={updateField} placeholder="Migration needs, timeline, questions..." required rows={3} maxLength={2000} />
+							<FormField label="Anything else we should know?">
+								<textarea name="note" aria-label="Anything else we should know?" value={form.note} onChange={updateField} placeholder="Migration needs, timeline, questions..." rows={3} maxLength={2000} />
 							</FormField>
 							{status === 'error' ? <p className="form-status form-status-error" role="alert">{message}</p> : null}
 							<div className="demo-workspace-actions">
 								<button type="button" className="btn-secondary" onClick={dismiss} disabled={status === 'submitting'}>Keep exploring</button>
 								<button type="submit" className="btn-primary" disabled={status === 'submitting'}>
-									{status === 'submitting' ? 'Sending...' : 'Request Workspace'}
+									{status === 'submitting' ? 'Sending...' : 'Let’s Talk'}
 								</button>
 							</div>
 						</form>
