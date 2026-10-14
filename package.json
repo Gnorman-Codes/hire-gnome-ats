@@ -19,6 +19,7 @@
 		"ci:build": "npm run build",
 		"ci:smoke": "node scripts/test-permissions-api.cjs",
 		"ci:test": "npm run ci:preflight && npm run ci:build",
+		"test:ai": "node --test tests/ai-budget-policy.test.mjs",
 		"test:permissions": "node scripts/test-permissions-api.cjs",
 		"prisma:generate": "prisma generate",
 		"prisma:migrate": "prisma migrate dev",

@@ -159,7 +159,7 @@ function buildEnvironment(config, resolved, configPath, outputPath) {
 		HOSTED_TRIAL_DAYS: String(config.trial?.days ?? 0),
 		HOSTED_TRIAL_STARTED_AT: cleanString(config.trial?.startedAt),
 		HOSTED_TRIAL_CONTACT_EMAIL: cleanString(config.trial?.contactEmail),
-		OPENAI_RESUME_MODEL: cleanString(openAi.model || 'gpt-4o-mini'),
+		OPENAI_RESUME_MODEL: cleanString(openAi.model || 'gpt-6-luna'),
 		OPENAI_MONTHLY_BUDGET_USD: String(openAi.monthlyBudgetUsd ?? 10),
 		OPENAI_ENABLED: String(openAi.enabled !== false),
 		...(openAi.pricing ? {

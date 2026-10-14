@@ -383,7 +383,7 @@ Use `.env` for:
 #### AI And Parsing
 | Variable | Default | Purpose |
 |---|---|---|
-| `OPENAI_RESUME_MODEL` | `gpt-4o-mini` | Model used for resume parsing/enrichment calls when OpenAI key exists in system settings. |
+| `OPENAI_RESUME_MODEL` | `gpt-6-luna` | Model used for resume parsing/enrichment calls when OpenAI key exists in system settings. |
 
 #### File Storage
 | Variable | Default | Purpose |
@@ -670,7 +670,7 @@ can view usage but cannot change provider controls. For hosted operations use:
 ```json
 "openai": {
   "apiKey": "YOUR_PROJECT_KEY",
-  "model": "gpt-4o-mini",
+  "model": "gpt-6-luna",
   "monthlyBudgetUsd": 5,
   "enabled": true
 }
@@ -692,12 +692,15 @@ Unused reservation is released once accounting completes. A request may be
 refused slightly before the allowance is exhausted if its reservation cannot
 fit. In-flight requests finish if AI is disabled afterward.
 
-Standard text pricing for `gpt-4o-mini` and its dated snapshot is built in.
+Standard text pricing for `gpt-6-luna` is built in, including cache-write charges and the long-context premium.
 For another model, provide all three `integrations.openai.pricing` values:
 `inputUsdPerMillion`, `cachedInputUsdPerMillion`, `outputUsdPerMillion`.
 Unknown pricing blocks AI until configured. Reconcile estimates against the
 OpenAI dashboard; prices may change and estimates are not invoices.
-Requests use the standard service tier to match this pricing.
+Requests use the standard service tier to match this pricing. Luna requests explicitly disable reasoning to preserve the existing
+sampling settings and latency profile. Custom rates override the built-in prices;
+remove old GPT-4o rate overrides or replace them with Luna rates when upgrading.
+Run `npm run test:ai` to check request compatibility and budget accounting.
 
 Network failures or responses without usage are conservatively charged at the
 reserved amount because OpenAI may have processed them. A process crash or
