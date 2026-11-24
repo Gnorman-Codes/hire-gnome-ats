@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { AUTH_SESSION_COOKIE_NAME } from '@/lib/security-constants';
 import { getHostedTrialStatus } from '@/lib/hosted-trial';
+import { getPublicAppBaseUrl } from '@/lib/site-url';
 
 const encoder = new TextEncoder();
 const REQUEST_ID_HEADER = 'x-request-id';
@@ -238,10 +239,7 @@ export async function proxy(req) {
 		if (isAuthenticated) {
 			const next = req.nextUrl.searchParams.get('next');
 			if (!passwordChangeRequired && next?.startsWith('/api/integrations/v1/sso?')) {
-				const authorize = new URL(next, req.url);
-				return withResponseRequestId(new NextResponse(null, {
-					status: 307, headers: { Location: authorize.pathname + authorize.search }
-				}), requestId);
+				return redirectWithRequestId(new URL(next, getPublicAppBaseUrl(req.nextUrl.origin)), requestId);
 			}
 			return redirectWithRequestId(
 				new URL(trialRestricted ? '/trial-expired' : passwordChangeRequired ? '/account/password' : '/', req.url),
