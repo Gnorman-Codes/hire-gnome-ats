@@ -62,9 +62,6 @@ function run() {
 		users: [],
 		trial: { days: trialDays, startedAt: null, contactEmail: '' },
 		integrations: {},
-		billing: {
-			enabled: false
-		},
 		monitoring: {},
 		operations: {
 			emailTestMode: true,

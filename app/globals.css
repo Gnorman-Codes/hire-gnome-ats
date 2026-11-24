@@ -4182,10 +4182,6 @@ button:disabled {
 	flex-wrap: wrap;
 }
 
-.billing-sync-actions {
-	margin-top: 1rem;
-}
-
 .btn-compact {
 	min-height: 1.72rem;
 	padding: 0.28rem 0.52rem;
@@ -7439,6 +7435,16 @@ button:disabled {
 	font-weight: 500;
 	font-variant-ligatures: none;
 	color: var(--muted);
+}
+
+.synced-note-actions {
+	margin-top: 0.55rem;
+}
+
+.synced-note-actions textarea {
+	display: block;
+	width: 100%;
+	margin: 0.35rem 0;
 }
 
 .simple-list-reorderable li[draggable='true'] {
@@ -11227,4 +11233,14 @@ small {
 
 .ai-allowance-controls {
 	align-items: end;
+}
+
+.closer-connection-form { display: grid; gap: .9rem; }
+.closer-copy-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+.closer-copy-field input { min-width: 0; }
+.closer-write-option { display: flex; align-items: baseline; gap: .4rem; }
+.closer-write-option input { width: auto; }
+.closer-connection-form input[readonly] {
+	background: color-mix(in srgb, var(--panel) 90%, var(--muted));
+	color: var(--muted);
 }

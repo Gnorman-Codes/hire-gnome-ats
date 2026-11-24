@@ -13,19 +13,17 @@ export default function AdminPage() {
 		customFields: 0,
 		apiErrors: 0
 	});
-	const [billingEnabled, setBillingEnabled] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
 
 		async function load() {
-			const [divisionRes, userRes, skillRes, customFieldRes, errorRes, billingRes] = await Promise.all([
+			const [divisionRes, userRes, skillRes, customFieldRes, errorRes] = await Promise.all([
 				fetch('/api/divisions'),
 				fetch('/api/users'),
 				fetch('/api/skills'),
 				fetch('/api/admin/custom-fields?includeInactive=true'),
-				fetch('/api/admin/error-logs?limit=1'),
-				fetch('/api/admin/billing/summary', { cache: 'no-store' })
+				fetch('/api/admin/error-logs?limit=1')
 			]);
 
 			if (!divisionRes.ok || !userRes.ok || !skillRes.ok || !customFieldRes.ok || !errorRes.ok) return;
@@ -37,7 +35,6 @@ export default function AdminPage() {
 				customFieldRes.json()
 			]);
 			const errorData = await errorRes.json().catch(() => ({}));
-			const billingData = billingRes.ok ? await billingRes.json().catch(() => ({})) : {};
 			if (cancelled) return;
 
 			setCounts({
@@ -47,7 +44,6 @@ export default function AdminPage() {
 				customFields: Array.isArray(customFieldData) ? customFieldData.length : 0,
 				apiErrors: Number.isInteger(errorData?.total) ? errorData.total : 0
 			});
-			setBillingEnabled(Boolean(billingData?.config?.enabled));
 		}
 
 		load();
@@ -85,13 +81,18 @@ export default function AdminPage() {
 					<article className="panel panel-spacious">
 						<div className="admin-card-section-head">
 							<h3>Platform Controls</h3>
-							<p>Settings, imports, exports, and billing.</p>
+							<p>Settings, integrations, imports, and exports.</p>
 						</div>
 						<div className="metric-grid admin-metric-grid">
 							{renderAdminCard({
 								href: '/admin/settings',
 								label: 'Configuration',
 								value: 'Settings'
+							})}
+							{renderAdminCard({
+								href: '/admin/closer-gnome',
+								label: 'Integration',
+								value: 'Closer Gnome'
 							})}
 							{renderAdminCard({
 								href: '/admin/imports',
@@ -103,13 +104,6 @@ export default function AdminPage() {
 								label: 'Data Export',
 								value: 'Export Center'
 							})}
-							{billingEnabled
-								? renderAdminCard({
-									href: '/admin/billing',
-									label: 'Billing',
-									value: 'Seats'
-								})
-								: null}
 						</div>
 					</article>
 

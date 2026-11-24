@@ -1,3 +1,4 @@
+import { changeSyncedActivityNote } from '@/lib/synced-activity-note-route';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { clientNoteSchema } from '@/lib/validators';
@@ -140,3 +141,6 @@ async function postClients_id_notesHandler(req, { params }) {
 
 export const GET = withApiLogging('clients.id.notes.get', getClients_id_notesHandler);
 export const POST = withApiLogging('clients.id.notes.post', postClients_id_notesHandler);
+
+export const PATCH = withApiLogging('clients.id.notes.patch', changeSyncedActivityNote('client', false));
+export const DELETE = withApiLogging('clients.id.notes.delete', changeSyncedActivityNote('client', true));

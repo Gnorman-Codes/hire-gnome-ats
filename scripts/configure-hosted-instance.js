@@ -21,11 +21,6 @@ function requireString(value, label) {
 	return normalized;
 }
 
-function normalizeBoolean(value, fallback = false) {
-	if (typeof value === 'boolean') return value;
-	return fallback;
-}
-
 function validateDomain(value) {
 	const domain = requireString(value, 'instance.domain').toLowerCase();
 	if (!/^[a-z0-9.-]+$/.test(domain) || !domain.includes('.')) {
@@ -94,13 +89,6 @@ function validateConfig(config) {
 		HOSTED_TRIAL_CONTACT_EMAIL: config.trial?.contactEmail || ''
 	});
 
-	if (normalizeBoolean(config.billing?.enabled, false)) {
-		requireString(config.billing?.stripeSecretKey, 'billing.stripeSecretKey');
-		requireString(config.billing?.customerId, 'billing.customerId');
-		requireString(config.billing?.subscriptionId, 'billing.subscriptionId');
-		requireString(config.billing?.seatPriceId, 'billing.seatPriceId');
-	}
-
 	return {
 		domain,
 		databaseName,
@@ -122,7 +110,6 @@ function relativeHostPath(filePath) {
 }
 
 function buildEnvironment(config, resolved, configPath, outputPath) {
-	const billing = config.billing || {};
 	const monitoring = config.monitoring || {};
 	const operations = config.operations || {};
 	const openAi = config.integrations?.openai || {};
@@ -175,18 +162,7 @@ function buildEnvironment(config, resolved, configPath, outputPath) {
 		ERROR_ALERT_WEBHOOK_URL: cleanString(monitoring.errorAlertWebhookUrl),
 		HEALTH_ALERT_WEBHOOK_URL: cleanString(monitoring.healthAlertWebhookUrl),
 		PAPERTRAIL_HOST: cleanString(monitoring.papertrailHost),
-		PAPERTRAIL_PORT: cleanString(monitoring.papertrailPort),
-		BILLING_ENABLED: String(billing.enabled === true),
-		BILLING_PROVIDER: 'stripe',
-		BILLING_STRIPE_SECRET_KEY: cleanString(billing.stripeSecretKey),
-		BILLING_STRIPE_CUSTOMER_ID: cleanString(billing.customerId),
-		BILLING_STRIPE_SUBSCRIPTION_ID: cleanString(billing.subscriptionId),
-		BILLING_BASE_PRICE_ID: cleanString(billing.basePriceId),
-		BILLING_SEAT_PRICE_ID: cleanString(billing.seatPriceId),
-		BILLING_STRIPE_SEAT_SUBSCRIPTION_ITEM_ID: cleanString(billing.seatSubscriptionItemId),
-		BILLING_STRIPE_BASE_SUBSCRIPTION_ITEM_ID: cleanString(billing.baseSubscriptionItemId),
-		BILLING_STRIPE_PRORATION_BEHAVIOR: cleanString(billing.prorationBehavior || 'create_prorations'),
-		BILLING_CURRENCY: cleanString(billing.currency || 'usd')
+		PAPERTRAIL_PORT: cleanString(monitoring.papertrailPort)
 	};
 }
 

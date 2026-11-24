@@ -67,18 +67,6 @@
       "enabled": true
     }
   },
-  "billing": {
-    "enabled": false,
-    "stripeSecretKey": null,
-    "customerId": null,
-    "subscriptionId": null,
-    "basePriceId": null,
-    "seatPriceId": null,
-    "seatSubscriptionItemId": null,
-    "baseSubscriptionItemId": null,
-    "prorationBehavior": "create_prorations",
-    "currency": "usd"
-  },
   "monitoring": {
     "errorAlertWebhookUrl": null,
     "healthAlertWebhookUrl": null,

@@ -20,7 +20,7 @@ Use this sequence as your default process:
 
 ### Administrator
 - Full access across all divisions.
-- Can manage users, divisions, system settings, billing, and diagnostics.
+- Can manage users, divisions, system settings, integrations, and diagnostics.
 - Diagnostics also surfaces recent inbound email webhook events for troubleshooting.
 - Administrators can purge operational ATS data from `Admin Area > System Settings > Diagnostics`, with a typed confirmation word required before the purge runs.
 - Can reassign owners and divisions.

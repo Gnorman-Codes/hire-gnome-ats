@@ -12,7 +12,6 @@ import {
 	resolveDivisionForUserWrite
 } from '@/lib/access-control';
 import { logCreate } from '@/lib/audit-log';
-import { syncBillingSeats } from '@/lib/billing-seats';
 import { hashPassword, isAcceptablePassword } from '@/lib/password-auth';
 import { parseJsonBody, ValidationError } from '@/lib/request-validation';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
@@ -74,10 +73,10 @@ async function getUsersHandler(req) {
 		const bypassScope =
 			(forSwitchParam === 'true' || forSwitchParam === '1') &&
 			authenticatedUser?.role === 'ADMINISTRATOR';
-		const activeFilter =
-			activeParam == null
-				? undefined
-				: { isActive: activeParam === 'true' || activeParam === '1' };
+		const activeFilter = {
+			serviceKey: null,
+			...(activeParam == null ? {} : { isActive: activeParam === 'true' || activeParam === '1' })
+		};
 		const where = !hasAdmin || bypassScope
 			? activeFilter
 			: addScopeToWhere(activeFilter, getUserScope(actingUser));
@@ -144,10 +143,6 @@ async function postUsersHandler(req) {
 			entityType: 'USER',
 			entity: user
 		});
-		await syncBillingSeats({
-			triggeredByUserId: actingUser?.id || null,
-			reason: 'user_created'
-		}).catch(() => null);
 
 		return NextResponse.json(user, { status: 201 });
 	} catch (error) {

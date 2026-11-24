@@ -14,7 +14,6 @@ const RECORD_ID_PREFIX_BY_MODEL = Object.freeze({
 	SystemSetting: 'SYS',
 	User: 'USR',
 	AuditLog: 'AUD',
-	BillingSeatSyncEvent: 'BIL',
 	Candidate: 'CAN',
 	Skill: 'SKL',
 	CandidateNote: 'CNO',

@@ -105,6 +105,12 @@ function isPublicApiPath(pathname) {
 		pathname === '/api/onboarding/status' ||
 		pathname === '/api/onboarding/setup' ||
 		pathname === '/api/health' ||
+		pathname === '/api/integrations/v1/companies' ||
+		pathname === '/api/integrations/v1/activity' ||
+		pathname === '/api/integrations/v1/details' ||
+		pathname === '/api/integrations/v1/users' ||
+		pathname === '/api/integrations/v1/divisions' ||
+		pathname === '/api/integrations/v1/sso' ||
 		pathname === '/api/inbound/postmark' ||
 		pathname.startsWith('/api/client-review/') ||
 		pathname === '/api/session/login' ||
@@ -230,8 +236,10 @@ export async function proxy(req) {
 
 	if (pathname === '/login') {
 		if (isAuthenticated) {
+			const next = req.nextUrl.searchParams.get('next');
+			const closerSignIn = next?.startsWith('/api/integrations/v1/sso?') ? next : '/';
 			return redirectWithRequestId(
-				new URL(trialRestricted ? '/trial-expired' : passwordChangeRequired ? '/account/password' : '/', req.url),
+				new URL(trialRestricted ? '/trial-expired' : passwordChangeRequired ? '/account/password' : closerSignIn, req.url),
 				requestId
 			);
 		}

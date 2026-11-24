@@ -162,7 +162,7 @@ cp hosted-instance.example.json hosted-instance.json
 chmod 600 hosted-instance.json
 ```
 
-Set the domain, database passwords, runtime secrets, administrator, users, SMTP, S3, OpenAI, Stripe, and operational values directly in `hosted-instance.json`. Replace every applicable `CHANGE_ME_...` value. This JSON file is the customer instance's source of truth.
+Set the domain, database passwords, runtime secrets, administrator, users, SMTP, S3, OpenAI, and operational values directly in `hosted-instance.json`. Replace every applicable `CHANGE_ME_...` value. This JSON file is the customer instance's source of truth.
 
 Start the instance by feeding that JSON file to the hosted launcher:
 ```bash
@@ -177,7 +177,7 @@ npm run hosted:status -- --config hosted-instance.json
 curl -fsS https://ats.customer.example/api/health
 ```
 
-The application container waits for MySQL, deploys Prisma migrations, reconciles the hosted JSON, and then starts Next.js. The JSON can configure branding, first-run users, SMTP, S3-compatible storage, OpenAI, Google Maps, billing runtime values, monitoring hooks, and operational settings.
+The application container waits for MySQL, deploys Prisma migrations, reconciles the hosted JSON, and then starts Next.js. The JSON can configure branding, first-run users, SMTP, S3-compatible storage, OpenAI, Google Maps, monitoring hooks, and operational settings.
 
 Configuration reconciliation rules:
 - A missing section or property leaves the current database-backed setting unchanged.
@@ -186,14 +186,6 @@ Configuration reconciliation rules:
 - A new user email is created.
 - An existing user email is never overwritten.
 - A named missing division is created; an existing division is reused.
-- Stripe customer/subscription objects are never created or cancelled by reconciliation; the supplied identifiers tell Hire Gnome which existing Stripe resources to use.
-
-For example, Stripe can be omitted initially with `"billing": { "enabled": false }`. After creating the Stripe customer and subscription, add their identifiers to `hosted-instance.json`, then run:
-```bash
-npm run hosted:up -- --config hosted-instance.json
-```
-
-Run one manual synchronization from the Admin Billing screen after first enabling billing so the subscription seat quantity matches the already-provisioned users.
 
 After the first verified login:
 1. Change the administrator password from `Account Settings`.
@@ -444,21 +436,6 @@ Use `.env` for:
 | `HOSTED_CONFIG_FILE` | empty | Optional versioned hosted-instance JSON reconciled during container startup. |
 | `HOSTED_MANAGED_INTEGRATIONS` | `false` | Hides provider-owned SMTP, OpenAI, Google Maps, and object-storage configuration from tenant administrators and blocks API updates. Generated hosted environments set this to `true`. |
 
-#### Hosted Billing (Base + Seats)
-| Variable | Default | Purpose |
-|---|---|---|
-| `BILLING_ENABLED` | `false` | Enables hosted billing seat synchronization. |
-| `BILLING_PROVIDER` | `stripe` | Billing provider (`stripe` currently supported). |
-| `BILLING_STRIPE_SECRET_KEY` | empty | Stripe API secret key used for billing sync. |
-| `BILLING_STRIPE_CUSTOMER_ID` | empty | Stripe customer id (`cus_...`). |
-| `BILLING_STRIPE_SUBSCRIPTION_ID` | empty | Stripe subscription id (`sub_...`) containing base + seat items. |
-| `BILLING_BASE_PRICE_ID` | empty | Stripe base recurring price id (`price_...`). |
-| `BILLING_SEAT_PRICE_ID` | empty | Stripe per-seat recurring price id (`price_...`). |
-| `BILLING_STRIPE_SEAT_SUBSCRIPTION_ITEM_ID` | empty | Optional explicit seat subscription item id (`si_...`) for quantity updates. |
-| `BILLING_STRIPE_BASE_SUBSCRIPTION_ITEM_ID` | empty | Optional explicit base subscription item id (`si_...`). |
-| `BILLING_STRIPE_PRORATION_BEHAVIOR` | `create_prorations` | Seat-change proration behavior (`create_prorations`, `always_invoice`, `none`). |
-| `BILLING_CURRENCY` | `usd` | Fallback currency display when Stripe pricing data is unavailable. |
-
 #### External ATS Operations
 | Variable | Default | Purpose |
 |---|---|---|
@@ -566,6 +543,61 @@ Demo instance reset behavior:
 - For interval resets, either:
 	- run `npm run demo:reset:loop` (uses `DEMO_RESET_INTERVAL_MINUTES`), or
 	- schedule `npm run demo:reset` with cron/systemd (for example every 6 hours).
+
+Company directory integration:
+
+- `GET /api/integrations/v1/companies` provides a read-only directory. Set
+  `COMPANY_INTEGRATION_USER_EMAIL` to a dedicated active account and
+  `COMPANY_INTEGRATION_TOKEN` to a randomly generated value of at least 32
+  characters. Both settings are required to enable the endpoint.
+- Send `Authorization: Bearer <token>`. The endpoint applies the configured
+  account's role, division, and ownership scope to both companies and contacts.
+- Use `?q=<company name>` to search companies. The response contains
+  `companies` (up to 25) and `hasMore`. Use `?recordId=<company record ID>` for
+  a single company and up to 100 contacts.
+- The directory returns company details and contact information, including
+  stable record IDs and numeric IDs for links to the corresponding records.
+- In **Admin Area → Closer Gnome**, generate a token and copy the address and
+  token into Closer. Hire Gnome creates a dedicated account for the connection.
+  Linked recruiters continue to use their own role and record scope. The token is
+  shown once and can be replaced from this page. Saved Admin settings take
+  precedence over environment defaults. The same page controls write access
+  and the optional sign-in callback URL shown in Closer Gnome.
+- Set `COMPANY_INTEGRATION_WRITE_ENABLED=true` to opt in to the Closer Gnome
+  handoff at `POST /api/integrations/v1/companies`. It creates or activates a
+  client and links or creates the selected contacts within the integration
+  user's scope. Company and contact source IDs make retries safe. The
+  transaction records creations and status changes in the audit log.
+- With the same write flag enabled, `POST /api/integrations/v1/activity` copies
+  Closer activity to notes on linked companies and selected contacts. The
+  endpoint checks the integration user's access and that each contact belongs
+  to its company. Stable activity identifiers prevent duplicate notes on retry.
+  Closer edits and deletes reconcile only the linked copies identified by those
+  IDs, including the old contact copy when an activity is reassigned. Use **Edit**
+  or **Delete** on a synced note in Hire Gnome to send the change back to Closer
+  and to the other copy. Both apps need the two-way activity sync update.
+- `GET /api/integrations/v1/activity?companyRef=<recordId>` returns native Hire
+  Gnome company notes. Include `contactRef` for notes on a contact at that
+  company and `before` for older notes. Reads use the same role and division
+  scope. Notes copied from Closer are excluded. With integration writes enabled,
+  Closer can edit or delete a native note by sending its parent, ID, and
+  last-seen update timestamp to the activity endpoint. The change is recorded
+  in the Hire Gnome audit log.
+- `POST /api/integrations/v1/details` reads shared fields for linked companies
+  and contacts. With integration writes enabled, it applies changes only
+  where the current field still matches the caller's previous value. Writes
+  retain the integration user's record scope and appear in the audit log.
+- `GET /api/integrations/v1/users` lists active users the integration account
+  can assign. A handoff can include the selected user's stable `ownerRef`
+  when creating records. Existing company and contact owners are preserved.
+  The integration returns each eligible user's role and division. Closer can
+  send a linked `viewerRef` when looking up companies, contacts, or notes, and
+  when handing off records. Hire Gnome applies both the viewer's and the
+  integration account's scopes.
+- To enable linked-account sign-in, deploy the Closer SSO code migration and set
+  `COMPANY_INTEGRATION_SSO_REDIRECT_URI` to the Closer installation's exact
+  `/login/hire-gnome/callback` URL. Hire Gnome checks the signed-in user and
+  issues a short-lived, single-use code for Closer's server to exchange.
 
 Inbound email webhook:
 - Postmark inbound webhook endpoint: `/api/inbound/postmark`

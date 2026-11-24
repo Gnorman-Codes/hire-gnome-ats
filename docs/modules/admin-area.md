@@ -11,7 +11,7 @@ Admin Area controls platform-level configuration, access, diagnostics, and opera
 - Divisions
 - Skills
 - Custom Fields
-- Billing (when enabled)
+- Closer Gnome
 - API Errors
 
 ## System Settings
@@ -182,8 +182,8 @@ Admins can define additional fields for:
 - Interviews
 - Placements
 
-## Billing
-Visible only when billing is enabled. Includes seat summary, sync action, and sync history.
+## Closer Gnome
+Configure the integration token, write access, and the optional Closer Gnome sign-in callback.
 
 ## API Errors
 Operational error visibility for diagnostics and support.

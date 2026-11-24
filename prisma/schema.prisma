@@ -82,6 +82,7 @@ model User {
 	lastName         String
 	email            String      @unique
 	passwordHash     String?
+	serviceKey       String?     @unique @db.VarChar(64)
 	passwordChangeRequired Boolean @default(false)
 	notifyCareerSiteApplications Boolean @default(true)
 	notifyClientPortalFeedback Boolean @default(true)
@@ -113,9 +114,11 @@ model User {
 	candidateStatusChanges CandidateStatusChange[] @relation("CandidateStatusChangedBy")
 	auditLogs       AuditLog[]  @relation("AuditLogActor")
 	passwordResetTokens PasswordResetToken[]
+	closerSsoCodes CloserSsoCode[]
+	closerConnections CloserConnection[]
 	notifications  AppNotification[]
 	archivedEntities ArchivedEntity[] @relation("ArchivedEntityByUser")
-	billingSeatSyncEvents BillingSeatSyncEvent[] @relation("BillingSeatSyncTriggeredBy")
+	billingSeatSyncEvents BillingSeatSyncEvent[] @relation("BillingSeatSyncTriggeredBy") @ignore
 	bullhornExportJobs   BullhornExportJob[] @relation("BullhornExportRequestedBy")
 	placementCommissionSplits OfferCommissionSplit[] @relation("PlacementCommissionSplitUser")
 
@@ -147,6 +150,7 @@ model BullhornExportJob {
 	@@index([status, createdAt])
 }
 
+// Preserve historical rows without exposing the table through Prisma Client.
 model BillingSeatSyncEvent {
 	id                       Int      @id @default(autoincrement())
 	recordId                 String   @unique
@@ -170,6 +174,7 @@ model BillingSeatSyncEvent {
 	@@index([createdAt])
 	@@index([status, createdAt])
 	@@index([triggeredByUserId, createdAt])
+	@@ignore
 }
 
 model AppNotification {
@@ -517,6 +522,31 @@ model PasswordResetToken {
 	@@index([expiresAt])
 }
 
+model CloserConnection {
+	id             Int     @id
+	userId         Int?
+	tokenHash      String  @db.VarChar(64)
+	writesEnabled  Boolean @default(true)
+	ssoRedirectUri String? @db.VarChar(2048)
+	version        Int     @default(1)
+	user           User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+	@@index([userId])
+}
+
+model CloserSsoCode {
+	tokenHash      String   @id @db.VarChar(64)
+	challenge      String   @db.VarChar(43)
+	redirectUri    String   @db.VarChar(2048)
+	userId         Int
+	sessionVersion Int
+	expiresAt      DateTime
+	user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	@@index([expiresAt])
+	@@index([userId])
+}
+
 model Client {
 	id          Int        @id @default(autoincrement())
 	recordId    String     @unique
@@ -619,6 +649,12 @@ model ContactNote {
 	createdByUser   User?    @relation("ContactNoteCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
 
 	@@index([createdByUserId])
+}
+
+model SyncedActivityNoteChange {
+	recordId  String   @id @db.VarChar(80)
+	summary   String?  @db.Text
+	changedAt DateTime @updatedAt
 }
 
 model JobOrder {

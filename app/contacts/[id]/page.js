@@ -11,6 +11,8 @@ import FormField from '@/app/components/form-field';
 import LoadingIndicator from '@/app/components/loading-indicator';
 import SaveActionButton from '@/app/components/save-action-button';
 import CustomFieldsSection, { areRequiredCustomFieldsComplete } from '@/app/components/custom-fields-section';
+import SyncedNoteActions from '@/app/components/synced-note-actions';
+import { isSyncedActivityNote } from '@/lib/synced-activity-note';
 import ListSortControls from '@/app/components/list-sort-controls';
 import AuditTrailPanel from '@/app/components/audit-trail-panel';
 import EmailDraftModal from '@/app/components/email-draft-modal';
@@ -786,6 +788,15 @@ export default function ContactDetailsPage() {
 															: 'Unknown User'}{' '}
 														@ <span className="meta-emphasis-time">{formatDate(note.createdAt)}</span>
 													</p>
+													{isSyncedActivityNote(note.recordId, 'contact') ? (
+														<SyncedNoteActions note={note} url={`/api/contacts/${id}/notes`}
+															onChange={(noteId, updated) => setContact((current) => ({
+																...current,
+																notes: updated ? current.notes.map((entry) => entry.id === noteId ? { ...entry, ...updated } : entry)
+																	: current.notes.filter((entry) => entry.id !== noteId)
+															}))}
+														/>
+													) : null}
 												</div>
 											</li>
 										))}

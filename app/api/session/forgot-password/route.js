@@ -92,11 +92,12 @@ async function postForgotPassword(req) {
 			id: true,
 			firstName: true,
 			email: true,
-			isActive: true
+			isActive: true,
+			serviceKey: true
 		}
 	});
 
-	if (!user || !user.isActive) {
+	if (!user || !user.isActive || user.serviceKey) {
 		return NextResponse.json({ message: GENERIC_FORGOT_PASSWORD_MESSAGE });
 	}
 

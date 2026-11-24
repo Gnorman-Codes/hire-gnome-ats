@@ -71,6 +71,10 @@ function LoginPageContent() {
 			return;
 		}
 
+		if (!data?.user?.passwordChangeRequired && nextPath.startsWith('/api/integrations/v1/sso?')) {
+			window.location.assign(nextPath);
+			return;
+		}
 		router.replace(data?.user?.passwordChangeRequired ? '/account/password' : nextPath);
 		router.refresh();
 	}

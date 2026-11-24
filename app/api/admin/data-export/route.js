@@ -238,7 +238,6 @@ async function getAdmin_dataExportHandler(req) {
 		placements,
 		notifications,
 		archivedEntities,
-		billingSeatSyncEvents,
 		auditLogs,
 		apiErrorLogs
 	] = await Promise.all([
@@ -286,7 +285,6 @@ async function getAdmin_dataExportHandler(req) {
 		prisma.offer.findMany({ orderBy: { id: 'asc' } }),
 		prisma.appNotification.findMany({ orderBy: { id: 'asc' } }),
 		prisma.archivedEntity.findMany({ orderBy: { id: 'asc' } }),
-		prisma.billingSeatSyncEvent.findMany({ orderBy: { id: 'asc' } }),
 		includeAuditLogs ? prisma.auditLog.findMany({ orderBy: { id: 'asc' } }) : Promise.resolve([]),
 		includeApiErrorLogs ? prisma.apiErrorLog.findMany({ orderBy: { id: 'asc' } }) : Promise.resolve([])
 	]);
@@ -315,7 +313,6 @@ async function getAdmin_dataExportHandler(req) {
 		placements,
 		notifications,
 		archivedEntities,
-		billingSeatSyncEvents,
 		auditLogs,
 		apiErrorLogs
 	};

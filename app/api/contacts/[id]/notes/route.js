@@ -1,3 +1,4 @@
+import { changeSyncedActivityNote } from '@/lib/synced-activity-note-route';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { contactNoteSchema } from '@/lib/validators';
@@ -144,3 +145,6 @@ async function postContacts_id_notesHandler(req, { params }) {
 
 export const GET = withApiLogging('contacts.id.notes.get', getContacts_id_notesHandler);
 export const POST = withApiLogging('contacts.id.notes.post', postContacts_id_notesHandler);
+
+export const PATCH = withApiLogging('contacts.id.notes.patch', changeSyncedActivityNote('contact', false));
+export const DELETE = withApiLogging('contacts.id.notes.delete', changeSyncedActivityNote('contact', true));

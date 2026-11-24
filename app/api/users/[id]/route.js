@@ -11,7 +11,6 @@ import {
 	resolveDivisionForUserWrite
 } from '@/lib/access-control';
 import { logUpdate } from '@/lib/audit-log';
-import { syncBillingSeats } from '@/lib/billing-seats';
 import { hashPassword } from '@/lib/password-auth';
 import { parseRouteId, parseJsonBody, ValidationError } from '@/lib/request-validation';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
@@ -67,13 +66,13 @@ function handleError(error, fallbackMessage) {
 async function findScopedUser(id, actingUser, enforceScope = true) {
 	if (!enforceScope) {
 		return prisma.user.findUnique({
-			where: { id },
+			where: { id, serviceKey: null },
 			select: userSelect
 		});
 	}
 
 	return prisma.user.findFirst({
-		where: addScopeToWhere({ id }, getUserScope(actingUser)),
+		where: addScopeToWhere({ id, serviceKey: null }, getUserScope(actingUser)),
 		select: userSelect
 	});
 }
@@ -170,12 +169,6 @@ async function patchUsers_idHandler(req, { params }) {
 			before: existingUser,
 			after: user
 		});
-		if (Boolean(existingUser.isActive) !== Boolean(user.isActive)) {
-			await syncBillingSeats({
-				triggeredByUserId: actingUser?.id || null,
-				reason: 'user_activation_changed'
-			}).catch(() => null);
-		}
 
 		return NextResponse.json(user);
 	} catch (error) {

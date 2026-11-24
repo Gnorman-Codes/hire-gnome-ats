@@ -11,6 +11,8 @@ import PhoneInput from '@/app/components/phone-input';
 import LoadingIndicator from '@/app/components/loading-indicator';
 import SaveActionButton from '@/app/components/save-action-button';
 import CustomFieldsSection, { areRequiredCustomFieldsComplete } from '@/app/components/custom-fields-section';
+import SyncedNoteActions from '@/app/components/synced-note-actions';
+import { isSyncedActivityNote } from '@/lib/synced-activity-note';
 import ListSortControls from '@/app/components/list-sort-controls';
 import AuditTrailPanel from '@/app/components/audit-trail-panel';
 import { useToast } from '@/app/components/toast-provider';
@@ -783,6 +785,15 @@ export default function ClientDetailsPage() {
 															: 'Unknown User'}{' '}
 														@ <span className="meta-emphasis-time">{formatDate(note.createdAt)}</span>
 													</p>
+													{isSyncedActivityNote(note.recordId, 'client') ? (
+														<SyncedNoteActions note={note} url={`/api/clients/${id}/notes`}
+															onChange={(noteId, updated) => setClient((current) => ({
+																...current,
+																notes: updated ? current.notes.map((entry) => entry.id === noteId ? { ...entry, ...updated } : entry)
+																	: current.notes.filter((entry) => entry.id !== noteId)
+															}))}
+														/>
+													) : null}
 												</div>
 											</li>
 										))}

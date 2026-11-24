@@ -68,6 +68,7 @@ async function postResetPassword(req) {
 				select: {
 					id: true,
 					isActive: true,
+					serviceKey: true,
 					sessionVersion: true
 				}
 			}
@@ -79,7 +80,7 @@ async function postResetPassword(req) {
 		resetToken.usedAt ||
 		resetToken.expiresAt <= now ||
 		!resetToken.user ||
-		!resetToken.user.isActive
+		!resetToken.user.isActive || resetToken.user.serviceKey
 	) {
 		return NextResponse.json({ error: INVALID_TOKEN_MESSAGE }, { status: 400 });
 	}

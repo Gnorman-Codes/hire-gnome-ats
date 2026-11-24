@@ -84,7 +84,7 @@ async function postLogin(req) {
 		}
 	});
 
-	if (!user || !user.isActive) {
+	if (!user || !user.isActive || user.serviceKey) {
 		return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
 	}
 	if (user.lockoutUntil && user.lockoutUntil > now) {
