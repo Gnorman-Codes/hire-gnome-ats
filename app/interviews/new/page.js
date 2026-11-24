@@ -51,6 +51,23 @@ const DURATION_OPTIONS = [
 	{ value: '120', label: '120 minutes' }
 ];
 
+function useInterviewRecord(entity, id) {
+	const [lookup, setLookup] = useState(null);
+
+	useEffect(() => {
+		if (!id) return;
+		let active = true;
+		fetchLookupOptionById(entity, id).then((option) => {
+			if (active) setLookup({ id, option });
+		});
+		return () => {
+			active = false;
+		};
+	}, [entity, id]);
+
+	return lookup?.id === id ? lookup : null;
+}
+
 function toLocalDateTimeValue(date) {
 	if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
 		return '';
@@ -83,7 +100,6 @@ function NewInterviewsPageContent() {
 	const prefillCandidateId = searchParams.get('candidateId') || '';
 	const prefillJobOrderId = searchParams.get('jobOrderId') || '';
 	const prefillSubject = searchParams.get('subject') || '';
-	const [selectedCandidateStatus, setSelectedCandidateStatus] = useState(null);
 	const [form, setForm] = useState({
 		...initialForm,
 		candidateId: prefillCandidateId,
@@ -99,11 +115,14 @@ function NewInterviewsPageContent() {
 		() => calculateEndsAt(form.startsAt, form.durationMinutes),
 		[form.startsAt, form.durationMinutes]
 	);
+	const candidateLookup = useInterviewRecord('candidates', form.candidateId);
+	const jobOrderLookup = useInterviewRecord('job-orders', form.jobOrderId);
+	const selectedCandidateStatus = candidateLookup?.option?.status;
 
 	const hasRequiredFields = Boolean(
 		form.subject.trim() &&
-			form.candidateId &&
-			form.jobOrderId &&
+			candidateLookup?.option &&
+			jobOrderLookup?.option &&
 			form.interviewer.trim() &&
 			form.interviewerEmail.trim() &&
 			form.startsAt &&
@@ -128,28 +147,6 @@ function NewInterviewsPageContent() {
 		form.videoLink.trim() && !hasValidVideoLink
 			? 'Enter a valid video call link URL, including http:// or https://.'
 			: '';
-
-	useEffect(() => {
-		let active = true;
-
-		async function loadSelectedCandidate() {
-			if (!form.candidateId) {
-				if (active) {
-					setSelectedCandidateStatus(null);
-				}
-				return;
-			}
-
-			const option = await fetchLookupOptionById('candidates', form.candidateId, {});
-			if (!active) return;
-			setSelectedCandidateStatus(option?.status || null);
-		}
-
-		loadSelectedCandidate();
-		return () => {
-			active = false;
-		};
-	}, [form.candidateId]);
 
 	useEffect(() => {
 		if (error) {
@@ -270,11 +267,13 @@ function NewInterviewsPageContent() {
 								lookupParams={{ qualifiedOnly: 'true' }}
 								value={form.candidateId}
 								onChange={(nextValue) => setForm((f) => ({ ...f, candidateId: nextValue }))}
-								onSelectOption={(option) => setSelectedCandidateStatus(option?.status || null)}
 								placeholder="Search candidate"
 								label="Candidate"
 								emptyLabel="No qualified candidates available."
 							/>
+							{candidateLookup && !candidateLookup.option ? (
+								<p className="panel-subtext error" role="alert">This candidate is no longer available. Select a candidate to continue.</p>
+							) : null}
 						</FormField>
 						<FormField label="Job Order" required>
 							<LookupTypeaheadSelect
@@ -286,6 +285,9 @@ function NewInterviewsPageContent() {
 								label="Job Order"
 								emptyLabel="No matching job orders."
 							/>
+							{jobOrderLookup && !jobOrderLookup.option ? (
+								<p className="panel-subtext error" role="alert">This job order is no longer available. Select a job order to continue.</p>
+							) : null}
 						</FormField>
 					</div>
 					{!selectedCandidateIsQualified ? (
