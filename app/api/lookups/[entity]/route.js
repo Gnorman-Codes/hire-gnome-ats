@@ -12,7 +12,7 @@ import {
 	LOOKUP_RATE_LIMIT_MAX_REQUESTS,
 	LOOKUP_RATE_LIMIT_WINDOW_SECONDS
 } from '@/lib/security-constants';
-import { QUALIFIED_CANDIDATE_STATUSES } from '@/lib/candidate-status';
+import { QUALIFIED_CANDIDATE_STATUSES, SUBMISSION_CANDIDATE_STATUSES } from '@/lib/candidate-status';
 import { consumeRequestThrottle } from '@/lib/request-throttle';
 
 import { withApiLogging } from '@/lib/api-logging';
@@ -437,6 +437,7 @@ async function lookupCandidates({ actingUser, query, limit, skip = 0, selectedId
 	const scopeWhere = getEntityScope(actingUser);
 	const divisionId = parsePositiveInt(searchParams.get('divisionId'));
 	const qualifiedOnly = parseBoolean(searchParams.get('qualifiedOnly'));
+	const submissionEligibleOnly = parseBoolean(searchParams.get('submissionEligibleOnly'));
 	const excludeSubmittedJobOrderId = parsePositiveInt(searchParams.get('excludeSubmittedJobOrderId'));
 	const filters = [];
 	if (divisionId) {
@@ -444,6 +445,8 @@ async function lookupCandidates({ actingUser, query, limit, skip = 0, selectedId
 	}
 	if (qualifiedOnly) {
 		filters.push({ status: { in: QUALIFIED_CANDIDATE_STATUSES } });
+	} else if (submissionEligibleOnly) {
+		filters.push({ status: { in: SUBMISSION_CANDIDATE_STATUSES } });
 	}
 	if (excludeSubmittedJobOrderId) {
 		filters.push({

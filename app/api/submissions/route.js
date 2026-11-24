@@ -4,7 +4,7 @@ import { submissionSchema } from '@/lib/validators';
 import { AccessControlError, getActingUser } from '@/lib/access-control';
 import { getCandidateJobOrderScope, validateScopedCandidateAndJobOrder } from '@/lib/related-record-scope';
 import { logCreate } from '@/lib/audit-log';
-import { formatCandidateStatusLabel, isCandidateQualifiedForPipeline } from '@/lib/candidate-status';
+import { formatCandidateStatusLabel, isCandidateEligibleForSubmission } from '@/lib/candidate-status';
 import { parseJsonBody, ValidationError } from '@/lib/request-validation';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import { validateAndNormalizeCustomFieldValues } from '@/lib/custom-fields';
@@ -80,10 +80,10 @@ async function postSubmissionsHandler(req) {
 			candidateId: parsed.data.candidateId,
 			jobOrderId: parsed.data.jobOrderId
 		});
-		if (!isCandidateQualifiedForPipeline(scopedRelations?.candidate?.status)) {
+		if (!isCandidateEligibleForSubmission(scopedRelations.candidate.status)) {
 			throw new AccessControlError(
-				`Candidate must be Qualified or beyond before submitting. Current status: ${formatCandidateStatusLabel(
-					scopedRelations?.candidate?.status
+				`Candidate must be In Review or beyond before submitting. Current status: ${formatCandidateStatusLabel(
+					scopedRelations.candidate.status
 				)}.`,
 				400
 			);

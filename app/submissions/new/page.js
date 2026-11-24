@@ -11,7 +11,7 @@ import NewRecordGuide from '@/app/components/new-record-guide';
 import { useToast } from '@/app/components/toast-provider';
 import useUnsavedChangesGuard from '@/app/hooks/use-unsaved-changes-guard';
 import { fetchLookupOptionById } from '@/lib/lookup-client';
-import { formatCandidateStatusLabel, isCandidateQualifiedForPipeline } from '@/lib/candidate-status';
+import { formatCandidateStatusLabel, isCandidateEligibleForSubmission } from '@/lib/candidate-status';
 
 const initialForm = {
 	candidateId: '',
@@ -37,10 +37,10 @@ function NewSubmissionsPageContent() {
 	const [customFieldDefinitions, setCustomFieldDefinitions] = useState([]);
 	const toast = useToast();
 	useUnsavedChangesGuard(form);
-	const selectedCandidateIsQualified =
+	const selectedCandidateIsEligible =
 		!form.candidateId ||
 		!selectedCandidateStatus ||
-		isCandidateQualifiedForPipeline(selectedCandidateStatus);
+		isCandidateEligibleForSubmission(selectedCandidateStatus);
 	const customFieldsComplete = areRequiredCustomFieldsComplete(
 		customFieldDefinitions,
 		form.customFields
@@ -48,7 +48,7 @@ function NewSubmissionsPageContent() {
 	const canSave = Boolean(
 		form.candidateId &&
 		form.jobOrderId &&
-		selectedCandidateIsQualified &&
+		selectedCandidateIsEligible &&
 		customFieldsComplete
 	);
 
@@ -87,9 +87,9 @@ function NewSubmissionsPageContent() {
 			setError('Candidate and Job Order are required.');
 			return;
 		}
-		if (!selectedCandidateIsQualified) {
+		if (!selectedCandidateIsEligible) {
 			setError(
-				`Candidate must be Qualified or beyond before submitting. Current status: ${formatCandidateStatusLabel(
+				`Candidate must be In Review or beyond before submitting. Current status: ${formatCandidateStatusLabel(
 					selectedCandidateStatus
 				)}.`
 			);
@@ -138,16 +138,16 @@ function NewSubmissionsPageContent() {
 					<FormField label="Candidate" required>
 						<LookupTypeaheadSelect
 							entity="candidates"
-							lookupParams={{ qualifiedOnly: 'true' }}
+							lookupParams={{ submissionEligibleOnly: 'true' }}
 							value={form.candidateId}
 							onChange={(nextValue) => setForm((f) => ({ ...f, candidateId: nextValue }))}
 							onSelectOption={(option) => setSelectedCandidateStatus(option?.status || null)}
 							placeholder="Search candidate"
 							label="Candidate"
-							emptyLabel="No qualified candidates available."
+							emptyLabel="No eligible candidates available."
 						/>
 					</FormField>
-					{!selectedCandidateIsQualified ? (
+					{!selectedCandidateIsEligible ? (
 						<div className="validation-chip-row">
 							<span className="chip validation-chip-invalid">Candidate Not Submission-Ready</span>
 						</div>
@@ -205,9 +205,9 @@ function NewSubmissionsPageContent() {
 			</article>
 			<NewRecordGuide
 				title="Submission Setup"
-				intro="Submissions connect a qualified candidate to a job order and start the client-facing workflow."
+				intro="Submissions track a candidate’s progress on an individual job order."
 				checklist={[
-					'Only qualified candidates should be submitted.',
+					'Candidates can be submitted while their profile is In Review.',
 					'Confirm the candidate and job order pairing is the one you actually intend to present.',
 					'Use notes for recruiter context that should live on the submission itself.'
 				]}

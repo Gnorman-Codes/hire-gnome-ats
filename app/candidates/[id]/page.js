@@ -44,7 +44,7 @@ import {
 	withRecordNavigationQuery
 } from '@/lib/record-navigation-context';
 import { isValidOptionalHttpUrl } from '@/lib/url-validation';
-import { CANDIDATE_STATUS_OPTIONS, isCandidateQualifiedForPipeline } from '@/lib/candidate-status';
+import { CANDIDATE_STATUS_OPTIONS, isCandidateEligibleForSubmission, isCandidateQualifiedForPipeline } from '@/lib/candidate-status';
 
 const initialActivity = {
 	type: 'call',
@@ -424,7 +424,8 @@ export default function CandidateDetailsPage() {
 		hasValidLinkedinUrl &&
 		customFieldsComplete &&
 		hasStageChangeReason;
-	const candidateQualifiedForSubmissionInterview = isCandidateQualifiedForPipeline(candidate?.status);
+	const candidateEligibleForSubmission = isCandidateEligibleForSubmission(candidate?.status);
+	const candidateQualifiedForPipeline = isCandidateQualifiedForPipeline(candidate?.status);
 	const emailError =
 		editForm.email.trim() && !hasValidEmail ? 'Enter a valid email address.' : '';
 	const websiteError =
@@ -634,7 +635,7 @@ export default function CandidateDetailsPage() {
 	async function loadJobMatches(options = {}) {
 		if (!id) return;
 		const { keepResults = true, retryOnFailure = true } = options;
-		if (!candidateQualifiedForSubmissionInterview) {
+		if (!candidateQualifiedForPipeline) {
 			setJobMatchState((current) => ({
 				...current,
 				loading: false,
@@ -835,8 +836,8 @@ export default function CandidateDetailsPage() {
 	async function onAddSubmission() {
 		if (!candidate) return;
 		setActionsOpen(false);
-		if (!candidateQualifiedForSubmissionInterview) {
-			toast.error('Candidate must be Qualified or beyond before adding a submission.');
+		if (!candidateEligibleForSubmission) {
+			toast.error('Candidate must be In Review or beyond before adding a submission.');
 			return;
 		}
 		if (
@@ -864,7 +865,7 @@ export default function CandidateDetailsPage() {
 	async function onAddInterview() {
 		if (!candidate) return;
 		setActionsOpen(false);
-		if (!candidateQualifiedForSubmissionInterview) {
+		if (!candidateQualifiedForPipeline) {
 			toast.error('Candidate must be Qualified or beyond before scheduling an interview.');
 			return;
 		}
@@ -1006,10 +1007,10 @@ export default function CandidateDetailsPage() {
 
 	async function onCreateMatchedSubmission(match) {
 		if (!candidate?.id || !match?.jobOrderId) return;
-		if (!candidateQualifiedForSubmissionInterview) {
+		if (!candidateEligibleForSubmission) {
 			setJobMatchState((current) => ({
 				...current,
-				error: 'Candidate must be Qualified or beyond before creating submissions.'
+				error: 'Candidate must be In Review or beyond before creating submissions.'
 			}));
 			return;
 		}
@@ -1534,7 +1535,7 @@ export default function CandidateDetailsPage() {
 										role="menuitem"
 										className="actions-menu-item"
 										onClick={onAddSubmission}
-										disabled={!candidateQualifiedForSubmissionInterview}
+										disabled={!candidateEligibleForSubmission}
 									>
 										Add Submission
 									</button>
@@ -1543,7 +1544,7 @@ export default function CandidateDetailsPage() {
 										role="menuitem"
 										className="actions-menu-item"
 										onClick={onAddInterview}
-										disabled={!candidateQualifiedForSubmissionInterview}
+										disabled={!candidateQualifiedForPipeline}
 									>
 										Add Interview
 									</button>

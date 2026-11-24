@@ -289,6 +289,7 @@ export default function JobOrderDetailsPage() {
 	}, [form.clientId, selectedDivisionId]);
 	const submissionCandidateLookupParams = useMemo(() => {
 		const params = {
+			submissionEligibleOnly: 'true',
 			excludeSubmittedJobOrderId: String(id)
 		};
 		if (jobOrder?.divisionId) {
