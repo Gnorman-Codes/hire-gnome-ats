@@ -14,6 +14,7 @@ import {
 } from '@/lib/security-constants';
 import { QUALIFIED_CANDIDATE_STATUSES, SUBMISSION_CANDIDATE_STATUSES } from '@/lib/candidate-status';
 import { consumeRequestThrottle } from '@/lib/request-throttle';
+import { logError, requestLogContext } from '@/lib/logger';
 
 import { withApiLogging } from '@/lib/api-logging';
 const DEFAULT_LIMIT = 20;
@@ -752,7 +753,11 @@ async function getLookups_entityHandler(req, { params }) {
 			}
 		});
 	} catch (error) {
-		return handleError(error, 'Failed to load lookup options.');
+		const response = handleError(error, 'Failed to load lookup options.');
+		if (response.status >= 500) {
+			logError('lookups.entity.failed', requestLogContext(req, { error }));
+		}
+		return response;
 	}
 }
 

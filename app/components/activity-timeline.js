@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { formatDateTimeAt } from '@/lib/date-format';
 
 function formatTimelineTime(value) {
@@ -37,7 +38,9 @@ export default function ActivityTimeline({ items, emptyText = 'No timeline event
 								<span className={`chip activity-timeline-category activity-timeline-category-${item.category || 'record'}`}>
 									{getCategoryLabel(item.category)}
 								</span>
-								<strong className="activity-timeline-title">{item.title}</strong>
+								<strong className="activity-timeline-title">
+									{item.href ? <Link href={item.href}>{item.title}</Link> : item.title}
+								</strong>
 							</div>
 						</div>
 						{item.detail ? <p className="activity-timeline-detail">{item.detail}</p> : null}

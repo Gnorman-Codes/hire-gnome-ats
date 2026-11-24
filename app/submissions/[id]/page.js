@@ -401,7 +401,7 @@ export default function SubmissionDetailsPage() {
 			}
 
 			const nextForm = toForm(data);
-			setSubmission(data);
+			setSubmission((current) => ({ ...current, ...data }));
 			setForm(nextForm);
 			markAsClean(nextForm);
 			setWriteUpState({ generating: false, error: '' });

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { submissionSchema } from '@/lib/validators';
 import { AccessControlError, addScopeToWhere, getActingUser } from '@/lib/access-control';
 import { getCandidateJobOrderScope, validateScopedCandidateAndJobOrder } from '@/lib/related-record-scope';
-import { logUpdate } from '@/lib/audit-log';
+import { writeAuditLog } from '@/lib/audit-log';
 import { parseRouteId, parseJsonBody, ValidationError } from '@/lib/request-validation';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import { validateAndNormalizeCustomFieldValues } from '@/lib/custom-fields';
@@ -59,6 +59,29 @@ const submissionInclude = {
 	}
 };
 
+async function withSubmissionHistory(submission) {
+	const [updates, interviews] = await Promise.all([
+		prisma.auditLog.findMany({
+			where: { entityType: 'SUBMISSION', entityId: submission.id, action: 'UPDATE' },
+			select: {
+				id: true, beforeData: true, afterData: true, createdAt: true,
+				actorUser: { select: { firstName: true, lastName: true } }
+			}
+		}),
+		prisma.interview.findMany({
+			where: { candidateId: submission.candidateId, jobOrderId: submission.jobOrderId },
+			select: { id: true, status: true, subject: true, startsAt: true, createdAt: true }
+		})
+	]);
+	const statusChanges = updates.flatMap(({ id, beforeData, afterData, createdAt, actorUser }) => {
+		const fromStatus = beforeData?.status;
+		const toStatus = afterData?.status;
+		if (typeof fromStatus !== 'string' || typeof toStatus !== 'string' || fromStatus === toStatus) return [];
+		return [{ id, fromStatus, toStatus, createdAt, actorUser }];
+	});
+	return { ...submission, statusChanges, interviews };
+}
+
 function toNullablePositiveInt(value) {
 	if (value === '' || value == null) return null;
 	const number = Number(value);
@@ -107,7 +130,7 @@ async function getSubmissions_idHandler(req, { params }) {
 			return NextResponse.json({ error: 'Submission not found.' }, { status: 404 });
 		}
 
-		return NextResponse.json(submission);
+		return NextResponse.json(await withSubmissionHistory(submission));
 	} catch (error) {
 		return handleError(error, 'Failed to load submission.');
 	}
@@ -206,30 +229,35 @@ async function patchSubmissions_idHandler(req, { params }) {
 			);
 		}
 
-		const submission = await prisma.submission.update({
-			where: { id },
-			data: {
-				candidateId: existing.candidateId,
-				jobOrderId: existing.jobOrderId,
-				status: parsed.data.status,
-				isClientVisible:
-					typeof parsed.data.isClientVisible === 'boolean'
-						? parsed.data.isClientVisible
-						: existing.isClientVisible,
-				notes: parsed.data.notes || null,
-				aiWriteUp: parsed.data.aiWriteUp || null,
-				customFields: customFieldValidation.customFields
-			},
-			include: submissionInclude
-		});
-		await logUpdate({
-			actorUserId: actingUser?.id,
-			entityType: 'SUBMISSION',
-			before: existing,
-			after: submission
+		const submission = await prisma.$transaction(async (tx) => {
+			const updated = await tx.submission.update({
+				where: { id, status: existing.status },
+				data: {
+					candidateId: existing.candidateId,
+					jobOrderId: existing.jobOrderId,
+					status: parsed.data.status,
+					isClientVisible:
+						typeof parsed.data.isClientVisible === 'boolean'
+							? parsed.data.isClientVisible
+							: existing.isClientVisible,
+					notes: parsed.data.notes || null,
+					aiWriteUp: parsed.data.aiWriteUp || null,
+					customFields: customFieldValidation.customFields
+				},
+				include: submissionInclude
+			});
+			await writeAuditLog({
+				actorUserId: actingUser?.id,
+				action: 'UPDATE',
+				entityType: 'SUBMISSION',
+				entityId: id,
+				before: existing,
+				after: updated
+			}, tx);
+			return updated;
 		});
 
-		return NextResponse.json(submission);
+		return NextResponse.json(await withSubmissionHistory(submission));
 	} catch (error) {
 		return handleError(error, 'Failed to update submission.');
 	}
