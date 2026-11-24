@@ -13,8 +13,8 @@ const tokenHash = (value) => createHash('sha256').update(value).digest('hex');
 const challengeFor = (value) => createHash('sha256').update(value).digest('base64url');
 
 function redirect(url) {
-	return NextResponse.redirect(url, {
-		status: 303, headers: { ...integrationHeaders, 'Referrer-Policy': 'no-referrer' }
+	return new NextResponse(null, {
+		status: 303, headers: { ...integrationHeaders, 'Referrer-Policy': 'no-referrer', Location: String(url) }
 	});
 }
 
@@ -32,9 +32,8 @@ export async function GET(request) {
 
 	const user = await getAuthenticatedUser(request, { allowFallback: false });
 	if (!user) {
-		const login = new URL('/login', request.url);
-		login.searchParams.set('next', '/api/integrations/v1/sso?' + params.toString());
-		const response = redirect(login);
+		const login = new URLSearchParams({ next: '/api/integrations/v1/sso?' + params.toString() });
+		const response = redirect(`/login?${login}`);
 		if (getSessionTokenFromRequest(request)) clearSessionCookie(response);
 		return response;
 	}

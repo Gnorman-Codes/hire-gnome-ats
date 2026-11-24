@@ -237,9 +237,13 @@ export async function proxy(req) {
 	if (pathname === '/login') {
 		if (isAuthenticated) {
 			const next = req.nextUrl.searchParams.get('next');
-			const closerSignIn = next?.startsWith('/api/integrations/v1/sso?') ? next : '/';
+			if (!passwordChangeRequired && next?.startsWith('/api/integrations/v1/sso?')) {
+				return withResponseRequestId(new NextResponse(null, {
+					status: 307, headers: { Location: next }
+				}), requestId);
+			}
 			return redirectWithRequestId(
-				new URL(trialRestricted ? '/trial-expired' : passwordChangeRequired ? '/account/password' : closerSignIn, req.url),
+				new URL(trialRestricted ? '/trial-expired' : passwordChangeRequired ? '/account/password' : '/', req.url),
 				requestId
 			);
 		}
