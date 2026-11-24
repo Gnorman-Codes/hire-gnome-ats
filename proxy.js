@@ -238,8 +238,9 @@ export async function proxy(req) {
 		if (isAuthenticated) {
 			const next = req.nextUrl.searchParams.get('next');
 			if (!passwordChangeRequired && next?.startsWith('/api/integrations/v1/sso?')) {
+				const authorize = new URL(next, req.url);
 				return withResponseRequestId(new NextResponse(null, {
-					status: 307, headers: { Location: next }
+					status: 307, headers: { Location: authorize.pathname + authorize.search }
 				}), requestId);
 			}
 			return redirectWithRequestId(
