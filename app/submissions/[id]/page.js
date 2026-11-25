@@ -21,6 +21,7 @@ import LoadingIndicator from '@/app/components/loading-indicator';
 import SaveActionButton from '@/app/components/save-action-button';
 import AuditTrailPanel from '@/app/components/audit-trail-panel';
 import ActivityTimeline from '@/app/components/activity-timeline';
+import SubmissionCommunicationDialog from '@/app/components/submission-communication-dialog';
 import { useToast } from '@/app/components/toast-provider';
 import useUnsavedChangesGuard from '@/app/hooks/use-unsaved-changes-guard';
 import { useConfirmDialog } from '@/app/components/confirm-dialog';
@@ -114,6 +115,7 @@ export default function SubmissionDetailsPage() {
 	const [actionsOpen, setActionsOpen] = useState(false);
 	const [showAuditTrail, setShowAuditTrail] = useState(false);
 	const [workspaceTab, setWorkspaceTab] = useState('timeline');
+	const [communicationKind, setCommunicationKind] = useState('');
 	const [detailsPanelHeight, setDetailsPanelHeight] = useState(0);
 	const [customFieldDefinitions, setCustomFieldDefinitions] = useState([]);
 	const [recordNavigationContext, setRecordNavigationContext] = useState(null);
@@ -176,6 +178,7 @@ export default function SubmissionDetailsPage() {
 		markAsClean(nextForm);
 		setConvertState({ converting: false, error: '' });
 		setActionsOpen(false);
+		setCommunicationKind('');
 		setLoading(false);
 	}
 
@@ -312,6 +315,27 @@ export default function SubmissionDetailsPage() {
 		}
 
 		router.push(`/interviews/new?${query.toString()}`);
+	}
+
+	function openCommunication(kind) {
+		setActionsOpen(false);
+		setCommunicationKind(kind);
+	}
+
+	function onCommunicationRecorded(entry, success) {
+		setSubmission((current) => ({
+			...current,
+			communications: [entry, ...(current.communications ?? []).filter((item) => item.id !== entry.id)]
+		}));
+		setWorkspaceTab('timeline');
+		if (!success) return;
+		setCommunicationKind('');
+		const messages = {
+			demo_captured: 'Submission email captured in the demo mail sink.',
+			test_sent: 'Submission email sent in test mode.',
+			sent: 'Submission email sent.'
+		};
+		toast.success(entry.kind === 'feedback' ? 'Client feedback saved.' : messages[entry.deliveryStatus]);
 	}
 
 	async function onOpenCandidate() {
@@ -606,6 +630,12 @@ export default function SubmissionDetailsPage() {
 							</button>
 						{actionsOpen ? (
 							<div className="actions-menu-list" role="menu" aria-label="Submission actions">
+								<button type="button" role="menuitem" className="actions-menu-item" onClick={() => openCommunication('email')}>
+									Send Submission by Email
+								</button>
+								<button type="button" role="menuitem" className="actions-menu-item" onClick={() => openCommunication('feedback')}>
+									Log Client Feedback
+								</button>
 								<button
 									type="button"
 									role="menuitem"
@@ -921,7 +951,6 @@ export default function SubmissionDetailsPage() {
 				</div>
 				{workspaceTab === 'timeline' ? (
 					<div className="side-tab-content side-tab-content-scroll">
-						<p className="panel-subtext">Unified submission activity across recruiter actions, client feedback, write-up generation, and placement conversion.</p>
 						<div className="workspace-scroll-area">
 							<ActivityTimeline items={submissionTimelineItems} emptyText="No submission timeline events yet." />
 						</div>
@@ -971,6 +1000,15 @@ export default function SubmissionDetailsPage() {
 				) : null}
 			</article>
 			</div>
+			{communicationKind ? (
+				<SubmissionCommunicationDialog
+					key={`${id}-${communicationKind}`}
+					kind={communicationKind}
+					submission={submission}
+					onClose={() => setCommunicationKind('')}
+					onRecorded={onCommunicationRecorded}
+				/>
+			) : null}
 			{isAdmin ? <AuditTrailPanel entityType="SUBMISSION" entityId={id} visible={showAuditTrail} /> : null}
 		</section>
 	);

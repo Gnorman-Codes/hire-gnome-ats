@@ -7,6 +7,7 @@ import { writeAuditLog } from '@/lib/audit-log';
 import { parseRouteId, parseJsonBody, ValidationError } from '@/lib/request-validation';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import { validateAndNormalizeCustomFieldValues } from '@/lib/custom-fields';
+import { submissionCommunicationSelect } from '@/lib/submission-communications';
 
 import { withApiLogging } from '@/lib/api-logging';
 const submissionInclude = {
@@ -39,6 +40,10 @@ const submissionInclude = {
 	},
 	offer: {
 		select: { id: true, status: true, placementType: true, createdAt: true, updatedAt: true }
+	},
+	communications: {
+		orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+		select: submissionCommunicationSelect
 	},
 	clientFeedback: {
 		orderBy: { createdAt: 'desc' },

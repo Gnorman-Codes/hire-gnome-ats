@@ -4057,6 +4057,29 @@ button:disabled {
 	color: var(--ink);
 }
 
+.submission-communication-dialog {
+	width: min(42rem, calc(100vw - 2rem));
+	max-width: 42rem;
+	max-height: calc(100dvh - 2rem);
+	overflow: auto;
+	color: var(--ink);
+}
+
+.submission-communication-dialog::backdrop {
+	background: rgba(11, 30, 58, 0.45);
+	backdrop-filter: blur(3px);
+}
+
+.activity-timeline-message p {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.activity-timeline-message summary {
+	width: fit-content;
+	cursor: pointer;
+}
+
 .confirm-message {
 	margin: 0;
 	font-size: 0.9rem;

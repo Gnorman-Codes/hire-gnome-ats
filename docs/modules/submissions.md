@@ -58,6 +58,23 @@ Behavior:
 - If the submission is converted to a placement, the write-up remains visible but is locked
 - If OpenAI is not configured, the generate control remains visible but disabled with an inline hint
 
+## Send a Submission by Email
+
+On the submission, choose **Actions → Send Submission by Email**. Hire Gnome
+uses the hiring manager assigned to the job order. Review the recipient and
+reply address, edit the subject or message, then choose **Send Email**.
+Replies go to the sending recruiter's account email.
+
+Outgoing email uses the SMTP settings in **Admin Area → System Settings**.
+When email test mode is on, Hire Gnome routes the message to the configured
+test recipient. The submission timeline records the message and delivery status.
+In demo mode, submission emails use a separate local capture directory set by
+`DEMO_SUBMISSION_MAIL_DIR`. The application user needs write access to this
+directory. Demo submission email has no SMTP fallback.
+
+Choose **Actions → Log Client Feedback** to record a reply or feedback received
+by phone. The entry appears in the timeline without changing the submission status.
+
 ## Client Feedback
 Submission detail includes a `Client Feedback` section for portal-driven client responses.
 
@@ -65,17 +82,17 @@ Behavior:
 - Submission detail shows both submission `Origin` and `Client Portal` visibility so recruiters can differentiate career-site responses from recruiter-curated submissions.
 - Career-site `Web` responses start hidden from the client portal until a recruiter explicitly promotes them.
 - Recruiters can later hide a submission from the client portal again from the same actions menu.
-- Submission portal visibility controls and client feedback are hidden when the client portal is disabled globally.
+- The client feedback tab and portal visibility controls are hidden when the portal is disabled. Recruiters can still log feedback in the timeline.
 - Shows comments, scorecard ratings, and action history submitted through the client review portal
 - Includes the client name/email snapshot and timestamp for each entry
 - Captures actions like `Request Interview`, `Feedback`, and `Pass`
 - `Pass` is confirmed in the portal and locks the submission against any further client actions
 - When a client uses `Pass`, the submission is also moved to the bottom of the job order's priority order
 - The portal only exposes the candidate's labeled primary resume; other candidate attachments stay internal
-- Feedback is read-only internally and serves as the client-side activity trail on the submission
+- Feedback submitted through the portal is read-only internally.
 
 ## Workspace Timeline And Feedback
-Submission detail also includes a unified workspace that brings `Timeline` and `Client Feedback` together in one place. The timeline shows submission creation, client write-up generation, client feedback, and placement conversion events in chronological order.
+The submission timeline shows status changes, interviews, outgoing email, client feedback, write-up generation, and placement conversion in chronological order.
 
 ## Snapshot Usage
 Snapshot emphasizes immutable context and links back to source records.

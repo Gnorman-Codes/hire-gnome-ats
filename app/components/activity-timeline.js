@@ -44,6 +44,12 @@ export default function ActivityTimeline({ items, emptyText = 'No timeline event
 							</div>
 						</div>
 						{item.detail ? <p className="activity-timeline-detail">{item.detail}</p> : null}
+						{item.content ? (
+							<details className="activity-timeline-message">
+								<summary>{item.contentLabel}</summary>
+								<p>{item.content}</p>
+							</details>
+						) : null}
 						{item.meta || item.timestamp ? (
 							<div className="activity-timeline-foot">
 								{item.meta ? <p className="simple-list-meta activity-timeline-meta">{item.meta}</p> : <span />}

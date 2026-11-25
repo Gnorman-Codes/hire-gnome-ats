@@ -102,6 +102,7 @@ model User {
 	ownedContacts    Contact[]   @relation("ContactOwner")
 	ownedJobOrders   JobOrder[]  @relation("JobOrderOwner")
 	createdSubmissions Submission[] @relation("SubmissionCreatedBy")
+	submissionCommunications SubmissionCommunication[]
 	generatedSubmissionWriteUps Submission[] @relation("SubmissionWriteUpGeneratedBy")
 	generatedInterviewQuestions Interview[] @relation("InterviewQuestionsGeneratedBy")
 	createdCandidateNotes CandidateNote[] @relation("CandidateNoteCreatedBy")
@@ -736,6 +737,7 @@ model Submission {
 	jobOrderId Int
 	jobOrder   JobOrder @relation(fields: [jobOrderId], references: [id], onDelete: Restrict)
 	clientFeedback ClientSubmissionFeedback[]
+	communications SubmissionCommunication[]
 
 	@@unique([candidateId, jobOrderId])
 	@@index([candidateId, status])
@@ -744,6 +746,29 @@ model Submission {
 	@@index([jobOrderId, isClientVisible])
 	@@index([createdByUserId])
 	@@index([aiWriteUpGeneratedByUserId])
+}
+
+model SubmissionCommunication {
+	id            Int       @id @default(autoincrement())
+	submissionId  Int
+	requestId     String    @db.VarChar(36)
+	kind          String    @db.VarChar(20)
+	deliveryStatus String?  @db.VarChar(20)
+	contactName   String?   @db.VarChar(191)
+	recipientEmail String?  @db.VarChar(254)
+	replyTo       String?   @db.VarChar(254)
+	subject       String?   @db.VarChar(200)
+	body          String    @db.Text
+	actorUserId   Int?
+	actorName     String    @db.VarChar(191)
+	sentAt        DateTime?
+	createdAt     DateTime  @default(now())
+	submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+	actorUser     User?      @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+	@@unique([submissionId, requestId])
+	@@index([submissionId, createdAt])
+	@@index([actorUserId])
 }
 
 model Interview {
