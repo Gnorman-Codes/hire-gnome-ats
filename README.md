@@ -544,6 +544,8 @@ Demo instance reset behavior:
 	- run `npm run demo:reset:loop` (uses `DEMO_RESET_INTERVAL_MINUTES`), or
 	- schedule `npm run demo:reset` with cron/systemd (for example every 6 hours).
 
+For third-party integrations, see the [Hire Gnome Integration API v1 guide](docs/integration-api-v1.md) for credential setup, supported operations, and examples.
+
 Company directory integration:
 
 - `GET /api/integrations/v1/companies` provides a read-only directory. Set

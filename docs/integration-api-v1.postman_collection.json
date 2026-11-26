@@ -1,0 +1,710 @@
+{
+  "info": {
+    "name": "Hire Gnome Phase 1 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Set baseUrl and apiKey in your active Postman environment. Create a Read and Write key for the full workflow. List Records also works with a Read Only key. Each full run writes fictional sample records."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:43177/api/v1"
+    },
+    {
+      "key": "apiKey",
+      "value": ""
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": ""
+    },
+    {
+      "key": "contactId",
+      "value": ""
+    },
+    {
+      "key": "jobId",
+      "value": ""
+    },
+    {
+      "key": "candidateId",
+      "value": ""
+    },
+    {
+      "key": "submissionId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 · List Assignable Owners",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/owners?limit=10",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns an owner list', () => pm.expect(payload.data).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · Create Client",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/clients",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Copperline Postman {{runId}}\",\n  \"zipCode\": \"10001\",\n  \"industry\": \"Technology\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('runId', pm.variables.replaceIn('{{$guid}}'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 201', () => pm.response.to.have.status(201));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns a record ID', () => pm.expect(payload.data.recordId).to.be.a('string').and.not.empty);",
+              "if (pm.response.code === 201 && payload.data?.recordId) pm.collectionVariables.set('clientId', payload.data.recordId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · Create Hiring Contact",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/contacts",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Taylor\",\n  \"lastName\": \"Example\",\n  \"email\": \"postman-contact-{{runId}}@example.test\",\n  \"phone\": \"2125550103\",\n  \"source\": \"Referral\",\n  \"title\": \"Hiring Manager\",\n  \"clientRecordId\": \"{{clientId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 201', () => pm.response.to.have.status(201));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns a record ID', () => pm.expect(payload.data.recordId).to.be.a('string').and.not.empty);",
+              "if (pm.response.code === 201 && payload.data?.recordId) pm.collectionVariables.set('contactId', payload.data.recordId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Create Job Order",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/job-orders",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Platform Engineer\",\n  \"zipCode\": \"10001\",\n  \"status\": \"open\",\n  \"clientRecordId\": \"{{clientId}}\",\n  \"contactRecordId\": \"{{contactId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 201', () => pm.response.to.have.status(201));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns a record ID', () => pm.expect(payload.data.recordId).to.be.a('string').and.not.empty);",
+              "if (pm.response.code === 201 && payload.data?.recordId) pm.collectionVariables.set('jobId', payload.data.recordId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · Upsert Candidate",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/candidates/upsert",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Jamie\",\n  \"lastName\": \"Example\",\n  \"email\": \"postman-candidate-{{runId}}@example.test\",\n  \"mobile\": \"2125550108\",\n  \"source\": \"Referral\",\n  \"currentJobTitle\": \"Engineer\",\n  \"currentEmployer\": \"Example Systems\",\n  \"status\": \"in_review\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 201', () => pm.response.to.have.status(201));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns a record ID', () => pm.expect(payload.data.recordId).to.be.a('string').and.not.empty);",
+              "if (pm.response.code === 201 && payload.data?.recordId) pm.collectionVariables.set('candidateId', payload.data.recordId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · Retry Candidate Upsert",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/candidates/upsert",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Jamie\",\n  \"lastName\": \"Example\",\n  \"email\": \"POSTMAN-CANDIDATE-{{runId}}@example.test\",\n  \"mobile\": \"2125550108\",\n  \"source\": \"Referral\",\n  \"currentJobTitle\": \"Engineer\",\n  \"currentEmployer\": \"Example Systems\",\n  \"status\": \"in_review\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns the expected record ID', () => pm.expect(payload.data.recordId).to.equal(pm.collectionVariables.get('candidateId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · Submit Candidate to Job",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/submissions",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"candidateRecordId\": \"{{candidateId}}\",\n  \"jobOrderRecordId\": \"{{jobId}}\",\n  \"status\": \"submitted\",\n  \"notes\": \"Candidate is interested in the role.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 201', () => pm.response.to.have.status(201));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns a record ID', () => pm.expect(payload.data.recordId).to.be.a('string').and.not.empty);",
+              "if (pm.response.code === 201 && payload.data?.recordId) pm.collectionVariables.set('submissionId', payload.data.recordId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 · Update Submission Status and Notes",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/submissions/{{submissionId}}",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"under_review\",\n  \"notes\": \"Hiring manager is reviewing.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns saved status and notes', () => { pm.expect(payload.data.status).to.equal('under_review'); pm.expect(payload.data.notes).to.equal('Hiring manager is reviewing.'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 · Retry Original Submission",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/submissions",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"candidateRecordId\": \"{{candidateId}}\",\n  \"jobOrderRecordId\": \"{{jobId}}\",\n  \"status\": \"submitted\",\n  \"notes\": \"Candidate is interested in the role.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns the expected record ID', () => pm.expect(payload.data.recordId).to.equal(pm.collectionVariables.get('submissionId')));",
+              "pm.test('Returns saved status and notes', () => { pm.expect(payload.data.status).to.equal('under_review'); pm.expect(payload.data.notes).to.equal('Hiring manager is reviewing.'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 · Reopen Submission",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/submissions/{{submissionId}}",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "const payload = pm.response.json();",
+              "pm.test('Returns the saved relationships', () => { pm.expect(payload.data.candidateRecordId).to.equal(pm.collectionVariables.get('candidateId')); pm.expect(payload.data.jobOrderRecordId).to.equal(pm.collectionVariables.get('jobId')); });",
+              "pm.test('Returns saved status and notes', () => { pm.expect(payload.data.status).to.equal('under_review'); pm.expect(payload.data.notes).to.equal('Hiring manager is reviewing.'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Records",
+      "description": "Use a cursor from page.nextCursor with the same filters to request the next page.",
+      "item": [
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients?limit=10",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns up to 10 records', () => { pm.expect(payload.data).to.be.an('array'); pm.expect(payload.data.length).to.be.at.most(10); });",
+                  "pm.test('Returns a cursor or null', () => pm.expect(payload.page.nextCursor === null || typeof payload.page.nextCursor === 'string').to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Contacts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/contacts?limit=10",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns up to 10 records', () => { pm.expect(payload.data).to.be.an('array'); pm.expect(payload.data.length).to.be.at.most(10); });",
+                  "pm.test('Returns a cursor or null', () => pm.expect(payload.page.nextCursor === null || typeof payload.page.nextCursor === 'string').to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Candidates",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/candidates?limit=10",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns up to 10 records', () => { pm.expect(payload.data).to.be.an('array'); pm.expect(payload.data.length).to.be.at.most(10); });",
+                  "pm.test('Returns a cursor or null', () => pm.expect(payload.page.nextCursor === null || typeof payload.page.nextCursor === 'string').to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Job Orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/job-orders?limit=10",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns up to 10 records', () => { pm.expect(payload.data).to.be.an('array'); pm.expect(payload.data.length).to.be.at.most(10); });",
+                  "pm.test('Returns a cursor or null', () => pm.expect(payload.page.nextCursor === null || typeof payload.page.nextCursor === 'string').to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Submissions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/submissions?limit=10",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns up to 10 records', () => { pm.expect(payload.data).to.be.an('array'); pm.expect(payload.data.length).to.be.at.most(10); });",
+                  "pm.test('Returns a cursor or null', () => pm.expect(payload.page.nextCursor === null || typeof payload.page.nextCursor === 'string').to.be.true);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Read Back Sample Records",
+      "description": "Uses IDs and email captured in the write workflow. Step 10 reads the submission.",
+      "item": [
+        {
+          "name": "Read Clients by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clients/{{clientId}}",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns the expected record ID', () => pm.expect(payload.data.recordId).to.equal(pm.collectionVariables.get('clientId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Read Contacts by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/contacts/{{contactId}}",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns the expected record ID', () => pm.expect(payload.data.recordId).to.equal(pm.collectionVariables.get('contactId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Read Candidates by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/candidates/{{candidateId}}",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns the expected record ID', () => pm.expect(payload.data.recordId).to.equal(pm.collectionVariables.get('candidateId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Read Job Orders by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/job-orders/{{jobId}}",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns the expected record ID', () => pm.expect(payload.data.recordId).to.equal(pm.collectionVariables.get('jobId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Find Candidate by Email",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/candidates?email=postman-candidate-{{runId}}%40example.test",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "const payload = pm.response.json();",
+                  "pm.test('Returns the matching candidate', () => { pm.expect(payload.data).to.have.lengthOf(1); pm.expect(payload.data[0].recordId).to.equal(pm.collectionVariables.get('candidateId')); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

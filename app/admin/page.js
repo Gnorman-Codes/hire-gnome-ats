@@ -95,6 +95,11 @@ export default function AdminPage() {
 								value: 'Closer Gnome'
 							})}
 							{renderAdminCard({
+								href: '/admin/api-keys',
+								label: 'Integration',
+								value: 'API Keys'
+							})}
+							{renderAdminCard({
 								href: '/admin/imports',
 								label: 'Data Import',
 								value: 'Migration Console'

@@ -11267,3 +11267,10 @@ small {
 	background: color-mix(in srgb, var(--panel) 90%, var(--muted));
 	color: var(--muted);
 }
+
+.api-key-form { display: grid; gap: .9rem; }
+.api-key-copy-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+.api-key-copy-field input {
+	min-width: 0;
+	background: color-mix(in srgb, var(--panel) 90%, var(--muted));
+}

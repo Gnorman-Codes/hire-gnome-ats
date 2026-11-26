@@ -103,6 +103,7 @@ model User {
 	ownedJobOrders   JobOrder[]  @relation("JobOrderOwner")
 	createdSubmissions Submission[] @relation("SubmissionCreatedBy")
 	submissionCommunications SubmissionCommunication[]
+	apiCredentials IntegrationApiCredential[]
 	generatedSubmissionWriteUps Submission[] @relation("SubmissionWriteUpGeneratedBy")
 	generatedInterviewQuestions Interview[] @relation("InterviewQuestionsGeneratedBy")
 	createdCandidateNotes CandidateNote[] @relation("CandidateNoteCreatedBy")
@@ -221,6 +222,22 @@ model RequestThrottleEvent {
 
 	@@index([routeKey, ipHash, createdAt])
 	@@index([createdAt])
+}
+
+model IntegrationApiCredential {
+	id            Int       @id @default(autoincrement())
+	recordId      String    @unique
+	label         String
+	tokenHash     String    @unique @db.Char(64)
+	userId        Int
+	divisionId    Int
+	role          UserRole
+	writesEnabled Boolean  @default(false)
+	createdAt     DateTime  @default(now())
+	revokedAt     DateTime?
+	user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	@@index([userId])
 }
 
 model AuditLog {

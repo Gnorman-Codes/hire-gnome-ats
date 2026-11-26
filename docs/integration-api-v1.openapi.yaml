@@ -1,0 +1,1138 @@
+openapi: 3.1.0
+info:
+  title: Hire Gnome Integration API
+  version: 1.0.0
+  description: Opt-in, division-scoped integration API. See integration-api-v1.md for setup and request semantics.
+servers:
+  - url: /api/v1
+security:
+  - bearer: []
+paths:
+  /clients:
+    get:
+      summary: List clients
+      parameters:
+      - "$ref": "#/components/parameters/Limit"
+      - "$ref": "#/components/parameters/Cursor"
+      - "$ref": "#/components/parameters/UpdatedSince"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - page
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Client"
+                  page:
+                    "$ref": "#/components/schemas/Page"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    post:
+      summary: Create Client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ClientCreate"
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Client"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /clients/{recordId}:
+    get:
+      summary: Read Client
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Client"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    patch:
+      summary: Update Client
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ClientUpdate"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Client"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /contacts:
+    get:
+      summary: List contacts
+      parameters:
+      - "$ref": "#/components/parameters/Limit"
+      - "$ref": "#/components/parameters/Cursor"
+      - "$ref": "#/components/parameters/UpdatedSince"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - page
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Contact"
+                  page:
+                    "$ref": "#/components/schemas/Page"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    post:
+      summary: Create Contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ContactCreate"
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Contact"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /contacts/{recordId}:
+    get:
+      summary: Read Contact
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Contact"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    patch:
+      summary: Update Contact
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ContactUpdate"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Contact"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /candidates:
+    get:
+      summary: List candidates
+      parameters:
+      - "$ref": "#/components/parameters/Limit"
+      - "$ref": "#/components/parameters/Cursor"
+      - "$ref": "#/components/parameters/UpdatedSince"
+      - name: email
+        in: query
+        required: false
+        schema:
+          "$ref": "#/components/schemas/Email"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - page
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Candidate"
+                  page:
+                    "$ref": "#/components/schemas/Page"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    post:
+      summary: Create Candidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CandidateCreate"
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Candidate"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /candidates/{recordId}:
+    get:
+      summary: Read Candidate
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Candidate"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    patch:
+      summary: Update Candidate
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CandidateUpdate"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Candidate"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /job-orders:
+    get:
+      summary: List job-orders
+      parameters:
+      - "$ref": "#/components/parameters/Limit"
+      - "$ref": "#/components/parameters/Cursor"
+      - "$ref": "#/components/parameters/UpdatedSince"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - page
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/JobOrder"
+                  page:
+                    "$ref": "#/components/schemas/Page"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    post:
+      summary: Create JobOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/JobOrderCreate"
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/JobOrder"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /job-orders/{recordId}:
+    get:
+      summary: Read JobOrder
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/JobOrder"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    patch:
+      summary: Update JobOrder
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/JobOrderUpdate"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/JobOrder"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /submissions:
+    get:
+      summary: List submissions
+      parameters:
+      - "$ref": "#/components/parameters/Limit"
+      - "$ref": "#/components/parameters/Cursor"
+      - "$ref": "#/components/parameters/UpdatedSince"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - page
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Submission"
+                  page:
+                    "$ref": "#/components/schemas/Page"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    post:
+      summary: Create Submission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SubmissionCreate"
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Submission"
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Submission"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /submissions/{recordId}:
+    get:
+      summary: Read Submission
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Submission"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+    patch:
+      summary: Update Submission
+      parameters: [{"$ref":"#/components/parameters/RecordId"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SubmissionUpdate"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Submission"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /candidates/upsert:
+    post:
+      summary: Create or update a candidate by normalized email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CandidateUpsert"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Candidate"
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Candidate"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+  /owners:
+    get:
+      summary: List assignable owners
+      parameters:
+      - "$ref": "#/components/parameters/Limit"
+      - "$ref": "#/components/parameters/Cursor"
+      - "$ref": "#/components/parameters/UpdatedSince"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - data
+                - page
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Owner"
+                  page:
+                    "$ref": "#/components/schemas/Page"
+        '400': {"$ref":"#/components/responses/Error"}
+        '401': {"$ref":"#/components/responses/Error"}
+        '403': {"$ref":"#/components/responses/Error"}
+        '404': {"$ref":"#/components/responses/Error"}
+        '409': {"$ref":"#/components/responses/Error"}
+        '429': {"$ref":"#/components/responses/Error"}
+        '500': {"$ref":"#/components/responses/Error"}
+        '503': {"$ref":"#/components/responses/Error"}
+components:
+  securitySchemes:
+    bearer: {type: http, scheme: bearer}
+  responses:
+    Error:
+      description: Request failed
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    Cursor: {"name":"cursor","in":"query","required":false,"schema":{"type":"string"}}
+    UpdatedSince:
+      name: updatedSince
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    RecordId: {"name":"recordId","in":"path","required":true,"schema":{"$ref":"#/components/schemas/Short"}}
+  schemas:
+    Short: {"type":"string","minLength":1,"maxLength":191}
+    NullableShort: {"type":["string","null"],"maxLength":191}
+    Long: {"type":["string","null"],"maxLength":12000}
+    Email: {"type":"string","format":"email","maxLength":191}
+    Nonnegative: {"type":["number","null"],"minimum":0}
+    Page: {"type":"object","required":["nextCursor"],"properties":{"nextCursor":{"type":["string","null"]}}}
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+    Owner:
+      type: object
+      properties:
+        recordId:
+          "$ref": "#/components/schemas/Short"
+        firstName:
+          "$ref": "#/components/schemas/Short"
+        lastName:
+          "$ref": "#/components/schemas/Short"
+    ClientCreate:
+      type: object
+      required: ["name","zipCode"]
+      additionalProperties: false
+      properties:
+        name: {"$ref":"#/components/schemas/Short"}
+        zipCode: {"$ref":"#/components/schemas/Short"}
+        industry: {"$ref":"#/components/schemas/NullableShort"}
+        phone: {"$ref":"#/components/schemas/NullableShort"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        website: {"$ref":"#/components/schemas/NullableShort"}
+        description: {"$ref":"#/components/schemas/Long"}
+        status: {"enum":["Prospect","Active","Active + Verified","Inactive"]}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+    ClientUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: {"$ref":"#/components/schemas/Short"}
+        zipCode: {"$ref":"#/components/schemas/Short"}
+        industry: {"$ref":"#/components/schemas/NullableShort"}
+        phone: {"$ref":"#/components/schemas/NullableShort"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        website: {"$ref":"#/components/schemas/NullableShort"}
+        description: {"$ref":"#/components/schemas/Long"}
+        status: {"enum":["Prospect","Active","Active + Verified","Inactive"]}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+    Client:
+      type: object
+      required:
+      - recordId
+      - createdAt
+      - updatedAt
+      - name
+      - zipCode
+      - industry
+      - phone
+      - address
+      - city
+      - state
+      - website
+      - description
+      - status
+      - customFields
+      - ownerRecordId
+      - divisionRecordId
+      properties:
+        recordId: {"$ref":"#/components/schemas/Short"}
+        createdAt: {"type":"string","format":"date-time"}
+        updatedAt: {"type":"string","format":"date-time"}
+        name: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        zipCode: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        industry: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        phone: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        address: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        city: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        state: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        website: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        description: {"anyOf":[{"$ref":"#/components/schemas/Long"},{"type":"null"}]}
+        status: {"type":"string"}
+        customFields: {"anyOf":[{"type":"object","additionalProperties":true},{"type":"null"}]}
+        ownerRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        divisionRecordId: {"$ref":"#/components/schemas/NullableShort"}
+    ContactCreate:
+      type: object
+      required: ["firstName","lastName","email","phone","source","clientRecordId"]
+      additionalProperties: false
+      properties:
+        firstName: {"$ref":"#/components/schemas/Short"}
+        lastName: {"$ref":"#/components/schemas/Short"}
+        email: {"$ref":"#/components/schemas/Email"}
+        phone: {"$ref":"#/components/schemas/Short"}
+        source: {"$ref":"#/components/schemas/Short"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        title: {"$ref":"#/components/schemas/NullableShort"}
+        department: {"$ref":"#/components/schemas/NullableShort"}
+        linkedinUrl: {"$ref":"#/components/schemas/NullableShort"}
+        clientRecordId: {"$ref":"#/components/schemas/Short"}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+    ContactUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        firstName: {"$ref":"#/components/schemas/Short"}
+        lastName: {"$ref":"#/components/schemas/Short"}
+        email: {"$ref":"#/components/schemas/Email"}
+        phone: {"$ref":"#/components/schemas/Short"}
+        source: {"$ref":"#/components/schemas/Short"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        title: {"$ref":"#/components/schemas/NullableShort"}
+        department: {"$ref":"#/components/schemas/NullableShort"}
+        linkedinUrl: {"$ref":"#/components/schemas/NullableShort"}
+        clientRecordId: {"$ref":"#/components/schemas/Short"}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+    Contact:
+      type: object
+      required:
+      - recordId
+      - createdAt
+      - updatedAt
+      - firstName
+      - lastName
+      - email
+      - phone
+      - source
+      - address
+      - title
+      - department
+      - linkedinUrl
+      - clientRecordId
+      - customFields
+      - ownerRecordId
+      - divisionRecordId
+      properties:
+        recordId: {"$ref":"#/components/schemas/Short"}
+        createdAt: {"type":"string","format":"date-time"}
+        updatedAt: {"type":"string","format":"date-time"}
+        firstName: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        lastName: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        email: {"anyOf":[{"$ref":"#/components/schemas/Email"},{"type":"null"}]}
+        phone: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        source: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        address: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        title: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        department: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        linkedinUrl: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        clientRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        customFields: {"anyOf":[{"type":"object","additionalProperties":true},{"type":"null"}]}
+        ownerRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        divisionRecordId: {"$ref":"#/components/schemas/NullableShort"}
+    CandidateCreate:
+      type: object
+      required: ["firstName","lastName","email","mobile","source","currentJobTitle","currentEmployer"]
+      additionalProperties: false
+      properties:
+        firstName: {"$ref":"#/components/schemas/Short"}
+        lastName: {"$ref":"#/components/schemas/Short"}
+        email: {"$ref":"#/components/schemas/Email"}
+        mobile: {"$ref":"#/components/schemas/Short"}
+        phone: {"$ref":"#/components/schemas/NullableShort"}
+        source: {"$ref":"#/components/schemas/Short"}
+        currentJobTitle: {"$ref":"#/components/schemas/Short"}
+        currentEmployer: {"$ref":"#/components/schemas/Short"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        zipCode: {"$ref":"#/components/schemas/NullableShort"}
+        website: {"$ref":"#/components/schemas/NullableShort"}
+        linkedinUrl: {"$ref":"#/components/schemas/NullableShort"}
+        summary: {"$ref":"#/components/schemas/Long"}
+        skillSet: {"$ref":"#/components/schemas/Long"}
+        experienceYears: {"$ref":"#/components/schemas/Nonnegative"}
+        status: {"enum":["new","in_review","qualified","submitted","interview","offered","hired","rejected"]}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+        stageChangeReason: {"type":"string","minLength":1,"maxLength":1000}
+    CandidateUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        firstName: {"$ref":"#/components/schemas/Short"}
+        lastName: {"$ref":"#/components/schemas/Short"}
+        email: {"$ref":"#/components/schemas/Email"}
+        mobile: {"$ref":"#/components/schemas/Short"}
+        phone: {"$ref":"#/components/schemas/NullableShort"}
+        source: {"$ref":"#/components/schemas/Short"}
+        currentJobTitle: {"$ref":"#/components/schemas/Short"}
+        currentEmployer: {"$ref":"#/components/schemas/Short"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        zipCode: {"$ref":"#/components/schemas/NullableShort"}
+        website: {"$ref":"#/components/schemas/NullableShort"}
+        linkedinUrl: {"$ref":"#/components/schemas/NullableShort"}
+        summary: {"$ref":"#/components/schemas/Long"}
+        skillSet: {"$ref":"#/components/schemas/Long"}
+        experienceYears: {"$ref":"#/components/schemas/Nonnegative"}
+        status: {"enum":["new","in_review","qualified","submitted","interview","offered","hired","rejected"]}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+        stageChangeReason: {"type":"string","minLength":1,"maxLength":1000}
+    CandidateUpsert:
+      type: object
+      required: ["email"]
+      additionalProperties: false
+      properties:
+        firstName: {"$ref":"#/components/schemas/Short"}
+        lastName: {"$ref":"#/components/schemas/Short"}
+        email: {"$ref":"#/components/schemas/Email"}
+        mobile: {"$ref":"#/components/schemas/Short"}
+        phone: {"$ref":"#/components/schemas/NullableShort"}
+        source: {"$ref":"#/components/schemas/Short"}
+        currentJobTitle: {"$ref":"#/components/schemas/Short"}
+        currentEmployer: {"$ref":"#/components/schemas/Short"}
+        address: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        zipCode: {"$ref":"#/components/schemas/NullableShort"}
+        website: {"$ref":"#/components/schemas/NullableShort"}
+        linkedinUrl: {"$ref":"#/components/schemas/NullableShort"}
+        summary: {"$ref":"#/components/schemas/Long"}
+        skillSet: {"$ref":"#/components/schemas/Long"}
+        experienceYears: {"$ref":"#/components/schemas/Nonnegative"}
+        status: {"enum":["new","in_review","qualified","submitted","interview","offered","hired","rejected"]}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+        stageChangeReason: {"type":"string","minLength":1,"maxLength":1000}
+    Candidate:
+      type: object
+      required:
+      - recordId
+      - createdAt
+      - updatedAt
+      - firstName
+      - lastName
+      - email
+      - mobile
+      - phone
+      - source
+      - currentJobTitle
+      - currentEmployer
+      - address
+      - city
+      - state
+      - zipCode
+      - website
+      - linkedinUrl
+      - summary
+      - skillSet
+      - experienceYears
+      - status
+      - customFields
+      - ownerRecordId
+      - divisionRecordId
+      properties:
+        recordId: {"$ref":"#/components/schemas/Short"}
+        createdAt: {"type":"string","format":"date-time"}
+        updatedAt: {"type":"string","format":"date-time"}
+        firstName: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        lastName: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        email: {"anyOf":[{"$ref":"#/components/schemas/Email"},{"type":"null"}]}
+        mobile: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        phone: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        source: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        currentJobTitle: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        currentEmployer: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        address: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        city: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        state: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        zipCode: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        website: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        linkedinUrl: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        summary: {"anyOf":[{"$ref":"#/components/schemas/Long"},{"type":"null"}]}
+        skillSet: {"anyOf":[{"$ref":"#/components/schemas/Long"},{"type":"null"}]}
+        experienceYears: {"anyOf":[{"$ref":"#/components/schemas/Nonnegative"},{"type":"null"}]}
+        status: {"type":"string"}
+        customFields: {"anyOf":[{"type":"object","additionalProperties":true},{"type":"null"}]}
+        ownerRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        divisionRecordId: {"$ref":"#/components/schemas/NullableShort"}
+    JobOrderCreate:
+      type: object
+      required: ["title","zipCode","clientRecordId","contactRecordId"]
+      additionalProperties: false
+      properties:
+        title: {"$ref":"#/components/schemas/Short"}
+        zipCode: {"$ref":"#/components/schemas/Short"}
+        description: {"$ref":"#/components/schemas/NullableShort"}
+        location: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        status: {"enum":["open","on_hold","closed"]}
+        employmentType: {"enum":["Temporary - W2","Temporary - 1099","Permanent",null]}
+        openings: {"type":"integer","minimum":1,"maximum":2147483647}
+        currency: {"enum":["USD","CAD"]}
+        salaryMin: {"$ref":"#/components/schemas/Nonnegative"}
+        salaryMax: {"$ref":"#/components/schemas/Nonnegative"}
+        clientRecordId: {"$ref":"#/components/schemas/Short"}
+        contactRecordId: {"$ref":"#/components/schemas/Short"}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+    JobOrderUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        title: {"$ref":"#/components/schemas/Short"}
+        zipCode: {"$ref":"#/components/schemas/Short"}
+        description: {"$ref":"#/components/schemas/NullableShort"}
+        location: {"$ref":"#/components/schemas/NullableShort"}
+        city: {"$ref":"#/components/schemas/NullableShort"}
+        state: {"$ref":"#/components/schemas/NullableShort"}
+        status: {"enum":["open","on_hold","closed"]}
+        employmentType: {"enum":["Temporary - W2","Temporary - 1099","Permanent",null]}
+        openings: {"type":"integer","minimum":1,"maximum":2147483647}
+        currency: {"enum":["USD","CAD"]}
+        salaryMin: {"$ref":"#/components/schemas/Nonnegative"}
+        salaryMax: {"$ref":"#/components/schemas/Nonnegative"}
+        clientRecordId: {"$ref":"#/components/schemas/Short"}
+        contactRecordId: {"$ref":"#/components/schemas/Short"}
+        customFields: {"type":"object","additionalProperties":true}
+        ownerRecordId: {"$ref":"#/components/schemas/Short"}
+    JobOrder:
+      type: object
+      required:
+      - recordId
+      - createdAt
+      - updatedAt
+      - title
+      - zipCode
+      - description
+      - location
+      - city
+      - state
+      - status
+      - employmentType
+      - openings
+      - currency
+      - salaryMin
+      - salaryMax
+      - clientRecordId
+      - contactRecordId
+      - customFields
+      - ownerRecordId
+      - divisionRecordId
+      - closedAt
+      properties:
+        recordId: {"$ref":"#/components/schemas/Short"}
+        createdAt: {"type":"string","format":"date-time"}
+        updatedAt: {"type":"string","format":"date-time"}
+        title: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        zipCode: {"anyOf":[{"$ref":"#/components/schemas/Short"},{"type":"null"}]}
+        description: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        location: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        city: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        state: {"anyOf":[{"$ref":"#/components/schemas/NullableShort"},{"type":"null"}]}
+        status: {"type":"string"}
+        employmentType:
+          anyOf:
+          - enum:
+            - Temporary - W2
+            - Temporary - 1099
+            - Permanent
+            -
+          - type: 'null'
+        openings: {"anyOf":[{"type":"integer","minimum":1,"maximum":2147483647},{"type":"null"}]}
+        currency: {"anyOf":[{"enum":["USD","CAD"]},{"type":"null"}]}
+        salaryMin: {"anyOf":[{"$ref":"#/components/schemas/Nonnegative"},{"type":"null"}]}
+        salaryMax: {"anyOf":[{"$ref":"#/components/schemas/Nonnegative"},{"type":"null"}]}
+        clientRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        contactRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        customFields: {"anyOf":[{"type":"object","additionalProperties":true},{"type":"null"}]}
+        ownerRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        divisionRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        closedAt: {"type":["string","null"],"format":"date-time"}
+    SubmissionCreate:
+      type: object
+      required: ["candidateRecordId","jobOrderRecordId"]
+      additionalProperties: false
+      properties:
+        candidateRecordId: {"$ref":"#/components/schemas/Short"}
+        jobOrderRecordId: {"$ref":"#/components/schemas/Short"}
+        submittedByRecordId: {"$ref":"#/components/schemas/Short"}
+        status: {"enum":["submitted","under_review","qualified","offered","hired","rejected"]}
+        notes: {"$ref":"#/components/schemas/Long"}
+        customFields: {"type":"object","additionalProperties":true}
+    SubmissionUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        status: {"enum":["submitted","under_review","qualified","offered","hired","rejected"]}
+        notes: {"$ref":"#/components/schemas/Long"}
+        customFields: {"type":"object","additionalProperties":true}
+    Submission:
+      type: object
+      required:
+      - recordId
+      - createdAt
+      - updatedAt
+      - candidateRecordId
+      - jobOrderRecordId
+      - submittedByRecordId
+      - status
+      - notes
+      - customFields
+      properties:
+        recordId: {"$ref":"#/components/schemas/Short"}
+        createdAt: {"type":"string","format":"date-time"}
+        updatedAt: {"type":"string","format":"date-time"}
+        candidateRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        jobOrderRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        submittedByRecordId: {"$ref":"#/components/schemas/NullableShort"}
+        status: {"type":"string"}
+        notes: {"anyOf":[{"$ref":"#/components/schemas/Long"},{"type":"null"}]}
+        customFields: {"anyOf":[{"type":"object","additionalProperties":true},{"type":"null"}]}

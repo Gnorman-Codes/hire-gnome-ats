@@ -102,6 +102,8 @@ function isPublicPagePath(pathname) {
 
 function isPublicApiPath(pathname) {
 	return (
+		// Integration API handlers authenticate their own bearer credentials.
+		pathname.startsWith('/api/v1/') ||
 		pathname === '/api/instance-access' ||
 		pathname === '/api/onboarding/status' ||
 		pathname === '/api/onboarding/setup' ||
@@ -197,11 +199,14 @@ export async function proxy(req) {
  try { trial = await getHostedTrialStatus(); } catch { trialUnavailable = true; }
  const trialRestricted = trialUnavailable || trial?.expired;
  if (trialRestricted && !isTrialExempt(pathname, req.method)) {
-  if (pathname.startsWith('/api/')) return jsonWithRequestId({
-   error: trialUnavailable ? 'Instance access is unavailable. Contact your hosting provider.' : 'Your trial has expired. Contact your hosting provider to activate or extend access.',
-   code: trialUnavailable ? 'HOSTED_TRIAL_UNAVAILABLE' : 'HOSTED_TRIAL_EXPIRED',
-   expiresAt: trial?.expiresAt || null
-  }, { status: trialUnavailable ? 503 : 403, headers: { 'Cache-Control': 'no-store' } }, requestId);
+  if (pathname.startsWith('/api/')) {
+   const message = trialUnavailable ? 'Instance access is unavailable. Contact your hosting provider.' : 'Your trial has expired. Contact your hosting provider to activate or extend access.';
+   const code = trialUnavailable ? 'HOSTED_TRIAL_UNAVAILABLE' : 'HOSTED_TRIAL_EXPIRED';
+   const body = pathname.startsWith('/api/v1/')
+    ? { error: { code: code.toLowerCase(), message } }
+    : { error: message, code, expiresAt: trial?.expiresAt || null };
+   return jsonWithRequestId(body, { status: trialUnavailable ? 503 : 403, headers: { 'Cache-Control': 'no-store' } }, requestId);
+  }
   return redirectWithRequestId(new URL('/trial-expired', req.url), requestId);
  }
  if (isStaticAsset(pathname) && !pathname.startsWith('/api/')) return NextResponse.next();
