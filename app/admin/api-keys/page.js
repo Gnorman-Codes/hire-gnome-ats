@@ -204,7 +204,11 @@ function ApiKeySettings() {
 									</li>
 								))}
 							</ul>
-						) : <p className="panel-subtext">No API keys have been issued.</p>}
+						) : (
+							<div>
+								<p className="panel-subtext">No API keys yet. Use the form above to create one.</p>
+							</div>
+						)}
 					</article>
 				</>
 			) : null}
