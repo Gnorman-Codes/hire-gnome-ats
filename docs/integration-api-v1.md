@@ -4,26 +4,19 @@ The API lives at `https://your-hire-gnome.example/api/v1` on your installation.
 Use a dedicated credential for each integration. The browser API and the
 Closer Gnome connection have separate authentication.
 
-## Issue and rotate a credential
+## Manage API keys
 
 In Hire Gnome, open **Admin Area → API Keys**. Name the key, select the director
 or recruiter account it should use, then choose **Read Only** or **Read and Write**.
 Select **Create Key** and copy the API key and base URL into your integration.
 Store the key in your integration’s secret store. Hire Gnome shows it once.
 
-To rotate a key, create a replacement, update your integration, then select
-**Revoke Key** beside the old key. On the public demo, the shared admin can
-create and revoke keys for the demo recruiter. Keys are cleared when that
-recruiter is recreated during a scheduled demo reset.
+To replace a key, create a new one and confirm it works in your integration
+before selecting **Revoke Key** beside the old key.
 
-Server operators can also manage keys from the command line. On Docker, run
-these commands inside the ATS container.
-
-```sh
-node scripts/manage-api-credentials.cjs create USR-RECORD-ID "Sourcing integration" read-write
-node scripts/manage-api-credentials.cjs list
-node scripts/manage-api-credentials.cjs revoke KEY-RECORD-ID
-```
+On the public demo, the shared admin can create and revoke keys for the demo
+recruiter. Keys are cleared when that recruiter is recreated during a
+scheduled demo reset.
 
 Use an active director or recruiter assigned to a division. Their account must
 have completed any required password change. Each request includes
