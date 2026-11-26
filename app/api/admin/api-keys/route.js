@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getAuthenticatedUser } from '@/lib/access-control';
 import { writeAuditLog } from '@/lib/audit-log';
-import { DEMO_MODE } from '@/lib/demo-config';
+import { DEMO_API_KEYS_ENABLED, DEMO_MODE, DEMO_RECRUITER_EMAIL } from '@/lib/demo-config';
 import { isEligibleIntegrationApiUser, newIntegrationApiCredential } from '@/lib/integrations/api-credential.mjs';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import { prisma } from '@/lib/prisma';
@@ -15,6 +15,8 @@ const createInput = z.object({
 	writesEnabled: z.boolean()
 }).strict();
 const revokeInput = z.object({ recordId }).strict();
+const demoBlocked = DEMO_MODE && !DEMO_API_KEYS_ENABLED;
+const demoUserScope = DEMO_MODE ? { email: DEMO_RECRUITER_EMAIL, role: 'RECRUITER' } : {};
 
 const userFields = {
 	recordId: true, firstName: true, lastName: true, role: true, divisionId: true,
@@ -46,11 +48,14 @@ export async function GET(req) {
 	const admin = await getAuthenticatedUser(req, { allowFallback: false });
 	if (!admin) return json({ error: 'Sign in to continue.' }, 401);
 	if (admin.role !== 'ADMINISTRATOR') return json({ error: 'Administrator access required.' }, 403);
-	if (DEMO_MODE) return json({ demoMode: true, keys: [], users: [] });
+	if (demoBlocked) return json({ demoMode: true, keys: [], users: [] });
 	const [keys, users] = await Promise.all([
-		prisma.integrationApiCredential.findMany({ select: keyFields, orderBy: { id: 'desc' } }),
+		prisma.integrationApiCredential.findMany({ where: { user: demoUserScope }, select: keyFields, orderBy: { id: 'desc' } }),
 		prisma.user.findMany({
-			where: { isActive: true, serviceKey: null, passwordChangeRequired: false, divisionId: { not: null }, role: { in: ['DIRECTOR', 'RECRUITER'] } },
+			where: {
+				isActive: true, serviceKey: null, passwordChangeRequired: false,
+				divisionId: { not: null }, role: { in: ['DIRECTOR', 'RECRUITER'] }, ...demoUserScope
+			},
 			select: userFields,
 			orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }, { id: 'asc' }]
 		})
@@ -62,7 +67,7 @@ async function mutate(req, schema, action) {
 	const admin = await getAuthenticatedUser(req, { allowFallback: false });
 	if (!admin) return json({ error: 'Sign in to continue.' }, 401);
 	if (admin.role !== 'ADMINISTRATOR') return json({ error: 'Administrator access required.' }, 403);
-	if (DEMO_MODE) return json({ error: 'API key management is disabled on the public demo.' }, 403);
+	if (demoBlocked) return json({ error: 'API key management is disabled on the public demo.' }, 403);
 	if (req.headers.get('content-type')?.split(';')[0] !== 'application/json') {
 		return json({ error: 'Submit the API key request as JSON.' }, 415);
 	}
@@ -83,7 +88,7 @@ async function mutate(req, schema, action) {
 export function POST(req) {
 	return mutate(req, createInput, async (admin, { label, userRecordId, writesEnabled }) => {
 		const issued = await prisma.$transaction(async (tx) => {
-			const user = await tx.user.findUnique({ where: { recordId: userRecordId }, include: { division: true } });
+			const user = await tx.user.findUnique({ where: { recordId: userRecordId, ...demoUserScope }, include: { division: true } });
 			if (!isEligibleIntegrationApiUser(user)) return null;
 			const { token, data } = newIntegrationApiCredential({ user, label, writesEnabled });
 			const key = await tx.integrationApiCredential.create({ data, select: { ...keyFields, id: true } });
@@ -102,8 +107,9 @@ export function DELETE(req) {
 	return mutate(req, revokeInput, async (admin, { recordId: id }) => {
 		const key = await prisma.$transaction(async (tx) => {
 			const revokedAt = new Date();
-			const updated = await tx.integrationApiCredential.updateMany({ where: { recordId: id, revokedAt: null }, data: { revokedAt } });
-			const key = await tx.integrationApiCredential.findUnique({ where: { recordId: id }, select: { ...keyFields, id: true } });
+			const where = { recordId: id, user: demoUserScope };
+			const updated = await tx.integrationApiCredential.updateMany({ where: { ...where, revokedAt: null }, data: { revokedAt } });
+			const key = await tx.integrationApiCredential.findUnique({ where, select: { ...keyFields, id: true } });
 			if (!key) return null;
 			if (updated.count) {
 				await writeAuditLog({

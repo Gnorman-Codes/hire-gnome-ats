@@ -12,7 +12,9 @@ Select **Create Key** and copy the API key and base URL into your integration.
 Store the key in your integration’s secret store. Hire Gnome shows it once.
 
 To rotate a key, create a replacement, update your integration, then select
-**Revoke Key** beside the old key. The public demo disables key management.
+**Revoke Key** beside the old key. On the public demo, the shared admin can
+create and revoke keys for the demo recruiter. Keys are cleared when that
+recruiter is recreated during a scheduled demo reset.
 
 Server operators can also manage keys from the command line. On Docker, run
 these commands inside the ATS container.
