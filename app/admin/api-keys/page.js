@@ -183,7 +183,7 @@ function ApiKeySettings() {
 							</>
 						)}
 					</article>
-					<article className="panel panel-spacious">
+					<article className="panel panel-spacious panel-narrow">
 						<h3>Issued Keys</h3>
 						{settings.keys.length ? (
 							<ul className="simple-list">
