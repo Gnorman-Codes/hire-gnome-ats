@@ -415,6 +415,7 @@ Use `.env` for:
 | Variable | Default | Purpose |
 |---|---|---|
 | `DEMO_MODE` | `false` | Enables demo UI behavior (system settings read-only + demo credentials shown on login). |
+| `DEMO_API_KEYS_ENABLED` | `false` | In demo mode, lets the demo admin create and revoke API keys for the demo recruiter. |
 | `DEMO_WORKSPACE_FORMSPARK_URL` | empty | Server-only Formspark action URL used by the demo workspace-request form. |
 | `DEMO_ADMIN_EMAIL` | `admin@demoats.com` | Demo admin email shown on login when demo mode is enabled. |
 | `DEMO_RECRUITER_EMAIL` | `recruiter@demoats.com` | Demo recruiter email shown on login when demo mode is enabled. |
@@ -544,14 +545,45 @@ Demo instance reset behavior:
 	- run `npm run demo:reset:loop` (uses `DEMO_RESET_INTERVAL_MINUTES`), or
 	- schedule `npm run demo:reset` with cron/systemd (for example every 6 hours).
 
-For third-party integrations, see the [Hire Gnome Integration API v1 guide](docs/integration-api-v1.md) for credential setup, supported operations, and examples.
+### Hire Gnome API for third-party integrations
 
-Company directory integration:
+Use `/api/v1` to list, read, create, and update clients, contacts, candidates,
+job orders, and submissions. Records have stable IDs, and candidate upsert
+matches on email. Submission retries for the same candidate and job return the
+existing submission.
 
-- `GET /api/integrations/v1/companies` provides a read-only directory. Set
-  `COMPANY_INTEGRATION_USER_EMAIL` to a dedicated active account and
-  `COMPANY_INTEGRATION_TOKEN` to a randomly generated value of at least 32
-  characters. Both settings are required to enable the endpoint.
+In **Admin Area → API Keys**, create a read-only or read/write key for a
+director or recruiter. The key inherits that account's role, division, and
+record access. Copy it when it appears and use it as a Bearer token. You can
+revoke keys from the same page. The public demo limits key creation to its demo
+recruiter. Keys for that account are cleared when the scheduled reset recreates
+the recruiter.
+
+See the [API guide](docs/integration-api-v1.md), [OpenAPI contract](docs/integration-api-v1.openapi.yaml),
+and [Postman collection](docs/integration-api-v1.postman_collection.json).
+
+### Closer Gnome integration
+
+In Hire Gnome, open **Admin Area → Closer Gnome** and generate a connection
+token. Copy the address and token into **Admin → Hire Gnome Connection** in
+Closer Gnome. Hire Gnome creates a dedicated service account for the
+connection. Linked recruiters retain their own record access. Turn on
+**Allow Closer Gnome to sync changes to Hire Gnome** in Hire Gnome to enable
+handoff and sync writes. For linked-account sign-in, enter the exact callback
+URL shown in Closer.
+
+After marking an opportunity **Agreement Signed**, select **Send to Hire
+Gnome** in Closer and choose which contacts to include. **Open New Hire Gnome
+Job Order** then preselects the client and, when linked, the primary contact.
+The recruiter saves the job order in Hire Gnome.
+
+The Closer Gnome connection uses its own token and endpoints under
+`/api/integrations/v1`. Saved Admin settings take precedence over environment
+defaults. For environment-based setup, configure
+`COMPANY_INTEGRATION_USER_EMAIL` and `COMPANY_INTEGRATION_TOKEN` together,
+using a dedicated active account and a random token of at least 32 characters.
+
+- `GET /api/integrations/v1/companies` provides the read-only company directory.
 - Send `Authorization: Bearer <token>`. The endpoint applies the configured
   account's role, division, and ownership scope to both companies and contacts.
 - Use `?q=<company name>` to search companies. The response contains
@@ -559,14 +591,8 @@ Company directory integration:
   a single company and up to 100 contacts.
 - The directory returns company details and contact information, including
   stable record IDs and numeric IDs for links to the corresponding records.
-- In **Admin Area → Closer Gnome**, generate a token and copy the address and
-  token into Closer. Hire Gnome creates a dedicated account for the connection.
-  Linked recruiters continue to use their own role and record scope. The token is
-  shown once and can be replaced from this page. Saved Admin settings take
-  precedence over environment defaults. The same page controls write access
-  and the optional sign-in callback URL shown in Closer Gnome.
-- Set `COMPANY_INTEGRATION_WRITE_ENABLED=true` to opt in to the Closer Gnome
-  handoff at `POST /api/integrations/v1/companies`. It creates or activates a
+- With writes enabled (`COMPANY_INTEGRATION_WRITE_ENABLED=true` for
+  environment-based setup), `POST /api/integrations/v1/companies` creates or activates a
   client and links or creates the selected contacts within the integration
   user's scope. Company and contact source IDs make retries safe. The
   transaction records creations and status changes in the audit log.
@@ -596,12 +622,14 @@ Company directory integration:
   send a linked `viewerRef` when looking up companies, contacts, or notes, and
   when handing off records. Hire Gnome applies both the viewer's and the
   integration account's scopes.
-- To enable linked-account sign-in, deploy the Closer SSO code migration and set
-  `COMPANY_INTEGRATION_SSO_REDIRECT_URI` to the Closer installation's exact
-  `/login/hire-gnome/callback` URL. Hire Gnome checks the signed-in user and
-  issues a short-lived, single-use code for Closer's server to exchange.
+- Linked-account sign-in requires the Closer SSO code migration. For
+  environment-based setup, set `COMPANY_INTEGRATION_SSO_REDIRECT_URI` to the
+  exact `/login/hire-gnome/callback` URL shown in Closer. Hire Gnome checks the
+  signed-in user and issues a short-lived, single-use code for Closer's server
+  to exchange.
 
-Inbound email webhook:
+### Inbound email webhook
+
 - Postmark inbound webhook endpoint: `/api/inbound/postmark`
 - The route extracts email addresses from the payload, matches `Candidate.email` and `Contact.email`, creates cleaned `Email` notes on matches, and saves supported attachments to matched candidates only.
 - Contact matches receive notes only. Attachments are not saved to contacts.
@@ -610,7 +638,8 @@ Inbound email webhook:
 - Candidate attachments are saved only when the inbound payload includes attachment bytes, not just metadata.
 - Recent inbound events and attachment skip reasons are visible in `Admin Area > System Settings > System Diagnostics`.
 
-Client review portal:
+### Client review portal
+
 - The client portal can be disabled globally from `Admin Area > System Settings`.
 - Internal users can issue a persistent magic link from `Job Order Detail > Actions > Client Review Portal`.
 - Portal access is scoped to the job order's assigned client contact and remains valid for the life of the job unless revoked.
