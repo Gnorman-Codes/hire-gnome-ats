@@ -12,6 +12,7 @@ Admin Area controls platform-level configuration, access, diagnostics, and opera
 - Skills
 - Custom Fields
 - Closer Gnome
+- API Keys
 - API Errors
 
 ## System Settings
@@ -183,7 +184,24 @@ Admins can define additional fields for:
 - Placements
 
 ## Closer Gnome
-Configure the integration token, write access, and the optional Closer Gnome sign-in callback.
+
+In **Admin Area → Closer Gnome**, select **Generate Token** and copy the address
+and token into **Admin → Hire Gnome Connection** in Closer. Select **Save
+Connection**, then **Test Connection** in Closer. Enable **Allow Closer Gnome to
+sync changes to Hire Gnome** in Hire Gnome for deal handoff and two-way sync.
+For linked sign-in, paste the callback URL shown in Closer into **Sign-in
+callback URL** in Hire Gnome and save.
+
+Hire Gnome shows the connection token once. **Replace Token** invalidates the
+current token immediately, so copy the replacement into Closer to reconnect.
+See the [Closer Gnome workflow](../../README.md#closer-gnome-integration).
+
+## API Keys
+
+In **Admin Area → API Keys**, administrators can create read-only or read/write
+keys for a director or recruiter and revoke them individually. See the
+[API setup guide](../integration-api-v1.md#manage-api-keys) and
+[Postman collection](../integration-api-v1.postman_collection.json).
 
 ## API Errors
 Operational error visibility for diagnostics and support.

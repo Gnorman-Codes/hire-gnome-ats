@@ -637,6 +637,7 @@ using a dedicated active account and a random token of at least 32 characters.
 - Matching is based on any email addresses found in the inbound JSON payload, including common reply/forward content.
 - Candidate attachments are saved only when the inbound payload includes attachment bytes, not just metadata.
 - Recent inbound events and attachment skip reasons are visible in `Admin Area > System Settings > System Diagnostics`.
+- If `POSTMARK_INBOUND_WEBHOOK_SECRET` is set, include it either as `?secret=...` on the webhook URL or as the `x-webhook-secret` header.
 
 ### Client review portal
 
@@ -648,7 +649,6 @@ using a dedicated active account and a random token of at least 32 characters.
 - Portal management shows lifecycle analytics for sent, opened, last viewed, acted on, and total client actions logged on job order detail and in the modal.
 - Clients can review submitted candidates, read the recruiter write-up, download only the candidate's labeled primary resume, complete a simple scorecard (`Communication`, `Technical Fit`, `Culture Fit`, `Overall Recommendation`), leave comments, request interviews, or pass.
 - Client responses are written back to `Submission Detail > Client Feedback` with the structured scorecard and generate in-app plus email notifications for users who keep `Client Feedback Notifications` enabled in `Account Settings`.
-- If `POSTMARK_INBOUND_WEBHOOK_SECRET` is set, include it either as `?secret=...` on the webhook URL or as the `x-webhook-secret` header.
 
 ## Production Checklist
 - Set strong unique values for:

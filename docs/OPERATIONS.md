@@ -31,7 +31,14 @@ After all users verify their first login:
 
 Clearing the JSON users array removes the plaintext initial credentials only. It does not remove or modify the database users.
 
-To add or change an integration later, update only that section of `hosted-instance.json` and rerun `npm run hosted:up -- --config hosted-instance.json`. Missing properties are left unchanged; explicit `null` values clear nullable database-backed properties. Existing user records are always create-only through reconciliation.
+To update provider-managed settings such as SMTP or object storage, update the
+corresponding section of `hosted-instance.json` and rerun
+`npm run hosted:up -- --config hosted-instance.json`. Omitted properties retain
+their current values. Use `null` to clear nullable database-backed properties.
+Reconciliation only creates missing user records.
+
+Workspace administrators manage [public API keys](integration-api-v1.md#manage-api-keys)
+and the [Closer Gnome connection](modules/admin-area.md#closer-gnome) in Admin Area.
 
 Run an immediate backup:
 ```bash

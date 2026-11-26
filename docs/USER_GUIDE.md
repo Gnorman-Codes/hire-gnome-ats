@@ -55,6 +55,7 @@ Use this sequence as your default process:
 - Detail pages: snapshot at top, editable form, workspace tabs for related records.
 - Candidate, job order, and submission detail pages now include a unified `Timeline` inside the workspace, so recent recruiting activity is visible without opening multiple screens.
 - Actions menu (`...`): context actions like archive, close, cancel, convert, and administrator-only audit access where supported.
+- Administrators manage third-party credentials in [**Admin Area → API Keys**](integration-api-v1.md#manage-api-keys) and the CRM connection in [**Admin Area → Closer Gnome**](modules/admin-area.md#closer-gnome).
 - `Admin Area > Data Import` now supports generic CSV, Bullhorn, and Zoho Recruit migration batches, so messy spreadsheet exports and ATS CSV exports can be staged, previewed, and applied in the correct relationship order.
 - Bullhorn migration batches now preserve `customFieldDefinitions` and record-level custom field values when the source includes them.
 - Bullhorn migration batches now also preserve candidate notes, candidate education, candidate work history, contact notes, and structured candidate skills when Bullhorn exposes them.
@@ -81,6 +82,7 @@ If you are using the public demo environment, the first authenticated login show
 Important demo-specific behavior:
 - Demo data is preloaded so you can move directly through candidate, job order, submission, interview, and placement flows.
 - Demo data resets periodically.
+- The demo admin can create API keys for the demo recruiter. Those keys are cleared when the demo recruiter is recreated at reset.
 - Forwarding an email to `demo@hiregnome.com` triggers the inbound Postmark workflow.
 - The forwarded message must contain an email address that matches an existing candidate or contact record.
 - When it matches, Hire Gnome creates an email note on that record.
@@ -255,6 +257,7 @@ Common actions:
 4. Use actions menu for:
 - Convert to placement (with confirmation)
 - Schedule interview
+- [Send Submission by Email or Log Client Feedback](modules/submissions.md#send-a-submission-by-email)
 
 Behavior notes:
 - Candidate/job become locked after creation.
