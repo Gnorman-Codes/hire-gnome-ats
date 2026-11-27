@@ -46,7 +46,7 @@ The default Navy theme, shown with demo data.
 
 ![Candidate detail with the profile snapshot, next step, and activity workspace](https://hiregnome.com/img/navy/02_candidate.webp)
 
-![Submission timeline showing a captured demo email and logged client feedback](https://hiregnome.com/img/navy/04_submission_timeline.webp)
+![Full Submission Detail screen showing the demo email and client feedback on the timeline](https://hiregnome.com/img/navy/04_submission_detail.webp)
 
 </details>
 
