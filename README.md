@@ -19,6 +19,7 @@ Try the public demo environment: [https://demo.hiregnome.com](https://demo.hireg
 When demo mode is enabled, authenticated demo users see a one-time welcome modal with quick guidance. Forwarding a message to `demo@hiregnome.com` triggers the Postmark inbound workflow in the demo environment, but the forwarded message must include an email address that matches an existing candidate or contact record for processing to occur.
 
 ## Table Of Contents
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Changelog](#changelog)
 - [User Documentation](#user-documentation)
@@ -33,6 +34,23 @@ When demo mode is enabled, authenticated demo users see a one-time welcome modal
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [Security](#security)
+
+## Screenshots
+
+The default Navy theme, shown with demo data.
+
+![Hire Gnome Dashboard with key metrics, recent activity, and upcoming interviews](https://hiregnome.com/img/navy/01_dashboard.webp)
+
+<details>
+<summary>Candidate detail and submission timeline</summary>
+
+![Candidate detail with the profile snapshot, next step, and activity workspace](https://hiregnome.com/img/navy/02_candidate.webp)
+
+![Submission timeline showing a captured demo email and logged client feedback](https://hiregnome.com/img/navy/04_submission_timeline.webp)
+
+</details>
+
+[See the full product tour](https://hiregnome.com/#screenshots).
 
 ## Features
 - Authentication with first-run onboarding
