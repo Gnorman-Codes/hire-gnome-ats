@@ -44,6 +44,18 @@ npm run ci:preflight
 npm run build
 ```
 
+## Run the API integration test locally
+
+This test checks the [public API v1](docs/integration-api-v1.md).
+
+
+Apply the migrations to a disposable local MySQL database named
+`hg_api_qa_<suffix>`. Start a local Hire Gnome instance using that database,
+then set `HIRE_GNOME_API_TEST_DATABASE_URL` to its database URL and
+`HIRE_GNOME_API_TEST_URL` to its HTTP address. Run
+`node --test tests/integration-api-v1.test.cjs` from the repository root. The test
+creates fixture records and credentials in that database.
+
 ## Coding Style
 - Use tabs for indentation.
 - Preserve existing architecture patterns.

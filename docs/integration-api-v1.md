@@ -104,12 +104,3 @@ Treat documented v1 fields and behavior as the upgrade contract. Clients should
 tolerate additive fields and error codes. Breaking changes require a new major
 API version. This version covers the resources above. Interviews, placements,
 notes and activities endpoints, webhooks, and mailbox sync are separate work.
-
-## Run the integration test locally
-
-Apply the migrations to a disposable local MySQL database named
-`hg_api_qa_<suffix>`. Start a local Hire Gnome instance using that database,
-then set `HIRE_GNOME_API_TEST_DATABASE_URL` to its database URL and
-`HIRE_GNOME_API_TEST_URL` to its HTTP address. Run
-`node --test tests/integration-api-v1.test.cjs` from the repository root. The test
-creates fixture records and credentials in that database.
