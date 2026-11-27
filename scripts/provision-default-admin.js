@@ -3,6 +3,7 @@
 require('./load-env.cjs');
 
 const crypto = require('node:crypto');
+const { DEFAULT_THEME_KEY } = require('../lib/theme-options.cjs');
 const fs = require('node:fs');
 const { promisify } = require('node:util');
 const { PrismaClient } = require('@prisma/client');
@@ -16,7 +17,6 @@ const RECORD_ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const RECORD_ID_RANDOM_LENGTH = 8;
 const UNASSIGNED_DIVISION_NAME = 'Unassigned';
 const DEFAULT_SITE_NAME = 'Hire Gnome ATS';
-const DEFAULT_THEME_KEY = 'classic_blue';
 const ALLOWED_USER_ROLES = new Set(['ADMINISTRATOR', 'DIRECTOR', 'RECRUITER']);
 
 function parseBoolean(value, fallback = false) {

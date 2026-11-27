@@ -3,6 +3,7 @@
 require('./load-env.cjs');
 
 const mysql = require('mysql2/promise');
+const { DEFAULT_THEME_KEY } = require('../lib/theme-options.cjs');
 const crypto = require('node:crypto');
 const path = require('node:path');
 const { mkdir, writeFile } = require('node:fs/promises');
@@ -13,7 +14,6 @@ const PERSON_EMAIL_DOMAIN = 'demoats.com';
 const DIVISION_PREFIX = 'HG Demo - ';
 const CLIENT_PREFIX = 'HG Demo Client ';
 const DEMO_SITE_NAME = 'Hire Gnome ATS';
-const DEMO_THEME_KEY = 'classic_blue';
 
 const SOURCE_OPTIONS = [
 	'CareerBuilder',
@@ -559,7 +559,7 @@ async function ensureDemoSystemSettings(connection) {
 			'SYS-DEMO',
 			DEMO_SITE_NAME,
 			DEMO_SITE_NAME,
-			DEMO_THEME_KEY,
+			DEFAULT_THEME_KEY,
 			'Find your next placement opportunity.',
 			'Explore active roles across healthcare, technology, and professional services. Apply directly through the listing in under two minutes.'
 		]

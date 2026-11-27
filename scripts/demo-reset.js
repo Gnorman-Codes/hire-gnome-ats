@@ -4,11 +4,11 @@
 require('./load-env.cjs');
 
 const { spawnSync } = require('node:child_process');
+const { DEFAULT_THEME_KEY } = require('../lib/theme-options.cjs');
 const { PrismaClient } = require('@prisma/client');
 
 const RESET_MODE_VALUES = new Set(['full', 'seed']);
 const DEMO_SITE_NAME = 'Hire Gnome ATS';
-const DEMO_THEME_KEY = 'classic_blue';
 
 function parseArgValue(name, fallback = '') {
 	const prefix = `--${name}=`;
@@ -137,7 +137,7 @@ async function applyDemoBrandingDefaults() {
 			data: {
 				siteName: DEMO_SITE_NAME,
 				siteTitle: DEMO_SITE_NAME,
-				themeKey: DEMO_THEME_KEY,
+				themeKey: DEFAULT_THEME_KEY,
 				logoStorageProvider: null,
 				logoStorageBucket: null,
 				logoStorageKey: null,
@@ -184,7 +184,7 @@ async function main() {
 
 	const brandingReset = await applyDemoBrandingDefaults();
 	console.log(brandingReset
-		? '[demo-reset] Reset branding to the classic blue demo defaults.'
+		? `[demo-reset] Reset branding to the demo defaults (theme=${DEFAULT_THEME_KEY}).`
 		: '[demo-reset] No system settings record available for branding reset.');
 
 	console.log('[demo-reset] Completed successfully.');

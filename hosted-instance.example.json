@@ -3,7 +3,7 @@
   "instance": {
     "domain": "ats.customer.example",
     "siteName": "Customer ATS",
-    "theme": "classic_blue",
+    "theme": "navy",
     "image": "hire-gnome-ats:local",
     "localPort": 3000
   },

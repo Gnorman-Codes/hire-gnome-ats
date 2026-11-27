@@ -9,13 +9,13 @@ import { useConfirmDialog } from '@/app/components/confirm-dialog';
 import FormField from '@/app/components/form-field';
 import LoadingIndicator from '@/app/components/loading-indicator';
 import { useToast } from '@/app/components/toast-provider';
-import { THEME_OPTIONS } from '@/lib/theme-options';
+import { DEFAULT_THEME_KEY, THEME_OPTIONS } from '@/lib/theme-options.cjs';
 import { toBooleanFlag } from '@/lib/boolean-flag';
 import { formatDateTimeAt } from '@/lib/date-format';
 
 const initialForm = {
 	siteName: '',
-	themeKey: 'classic_blue',
+	themeKey: DEFAULT_THEME_KEY,
 	careerSiteEnabled: false,
 	clientPortalEnabled: true,
 	careerHeroTitle: '',
@@ -85,11 +85,11 @@ export default function AdminSettingsPage() {
 		emailTestMode: false,
 		emailTestRecipient: ''
 	});
-	const committedThemeRef = useRef('classic_blue');
+	const committedThemeRef = useRef(DEFAULT_THEME_KEY);
 	const [currentBranding, setCurrentBranding] = useState({
 		siteName: '',
 		logoUrl: '/branding/hire-gnome.png',
-		themeKey: 'classic_blue',
+		themeKey: DEFAULT_THEME_KEY,
 		hasCustomLogo: false
 	});
 	const [diagnosticsState, setDiagnosticsState] = useState({
@@ -127,11 +127,11 @@ export default function AdminSettingsPage() {
 			if (cancelled) return;
 			setDemoMode(Boolean(data.demoMode));
 			setManagedIntegrations(Boolean(data.managedIntegrations));
-			committedThemeRef.current = data.themeKey || 'classic_blue';
+			committedThemeRef.current = data.themeKey || DEFAULT_THEME_KEY;
 			setCurrentBranding({
 				siteName: data.siteName || '',
 				logoUrl: data.logoUrl || '/branding/hire-gnome.png',
-				themeKey: data.themeKey || 'classic_blue',
+				themeKey: data.themeKey || DEFAULT_THEME_KEY,
 				hasCustomLogo: Boolean(data.hasCustomLogo)
 			});
 			const nextForm = buildFormFromSettings(data);
@@ -167,14 +167,14 @@ export default function AdminSettingsPage() {
 	useEffect(() => {
 		if (typeof document === 'undefined') return;
 		if (loading) return;
-		const nextTheme = String(form.themeKey || '').trim() || 'classic_blue';
+		const nextTheme = String(form.themeKey || '').trim() || DEFAULT_THEME_KEY;
 		document.documentElement.setAttribute('data-theme', nextTheme);
 	}, [form.themeKey, loading]);
 
 	useEffect(() => {
 		return () => {
 			if (typeof document === 'undefined') return;
-			document.documentElement.setAttribute('data-theme', committedThemeRef.current || 'classic_blue');
+			document.documentElement.setAttribute('data-theme', committedThemeRef.current || DEFAULT_THEME_KEY);
 		};
 	}, []);
 
@@ -288,7 +288,7 @@ export default function AdminSettingsPage() {
 		const integrationFallback = data.managedIntegrations ? initialForm : fallback;
 		return {
 			siteName: data.siteName || fallback.siteName || '',
-			themeKey: data.themeKey || fallback.themeKey || 'classic_blue',
+			themeKey: data.themeKey || fallback.themeKey || DEFAULT_THEME_KEY,
 			careerSiteEnabled: toBooleanFlag(
 				data.careerSiteEnabled,
 				toBooleanFlag(fallback.careerSiteEnabled, false)
@@ -363,10 +363,10 @@ export default function AdminSettingsPage() {
 		setCurrentBranding({
 			siteName: data.siteName || form.siteName,
 			logoUrl: data.logoUrl || '/branding/hire-gnome.png',
-			themeKey: data.themeKey || form.themeKey || 'classic_blue',
+			themeKey: data.themeKey || form.themeKey || DEFAULT_THEME_KEY,
 			hasCustomLogo: Boolean(data.hasCustomLogo)
 		});
-		committedThemeRef.current = data.themeKey || form.themeKey || 'classic_blue';
+		committedThemeRef.current = data.themeKey || form.themeKey || DEFAULT_THEME_KEY;
 		const nextForm = buildFormFromSettings(data, form);
 		setForm(nextForm);
 		setSavedForm(nextForm);
@@ -382,7 +382,7 @@ export default function AdminSettingsPage() {
 					detail: {
 						siteName: data.siteName || form.siteName,
 						logoUrl: data.logoUrl || '/branding/hire-gnome.png',
-						themeKey: data.themeKey || form.themeKey || 'classic_blue',
+						themeKey: data.themeKey || form.themeKey || DEFAULT_THEME_KEY,
 						careerSiteEnabled: toBooleanFlag(data.careerSiteEnabled, false),
 						clientPortalEnabled: toBooleanFlag(data.clientPortalEnabled, true),
 						hasCustomLogo: Boolean(data.hasCustomLogo)

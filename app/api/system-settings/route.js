@@ -16,7 +16,7 @@ import {
 	DEFAULT_SITE_NAME,
 	DEFAULT_API_ERROR_LOG_RETENTION_DAYS
 } from '@/lib/system-settings';
-import { DEFAULT_THEME_KEY, normalizeThemeKey } from '@/lib/theme-options';
+import { DEFAULT_THEME_KEY, normalizeThemeKey } from '@/lib/theme-options.cjs';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 import {
 	getAttemptedHostedManagedSettingKeys,

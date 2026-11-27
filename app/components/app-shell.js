@@ -1,5 +1,6 @@
 'use client';
 
+import { DEFAULT_THEME_KEY } from '@/lib/theme-options.cjs';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -107,7 +108,7 @@ export default function AppShell({ children }) {
 
 	useEffect(() => {
 		if (typeof document === 'undefined') return;
-		const nextThemeKey = String(branding?.themeKey || 'classic_blue').trim() || 'classic_blue';
+		const nextThemeKey = String(branding?.themeKey || DEFAULT_THEME_KEY).trim() || DEFAULT_THEME_KEY;
 		document.documentElement.setAttribute('data-theme', nextThemeKey);
 	}, [branding?.themeKey]);
 

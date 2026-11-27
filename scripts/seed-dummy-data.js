@@ -3,6 +3,7 @@
 require('./load-env.cjs');
 
 const { PrismaClient } = require('@prisma/client');
+const { DEFAULT_THEME_KEY } = require('../lib/theme-options.cjs');
 const crypto = require('node:crypto');
 const path = require('node:path');
 const { mkdir, writeFile } = require('node:fs/promises');
@@ -89,7 +90,6 @@ const DIVISION_PREFIX = 'HG Seed - ';
 const configuredLoginPassword = String(process.env.AUTH_DEFAULT_PASSWORD || '').trim();
 const DEFAULT_LOGIN_PASSWORD = configuredLoginPassword.length >= 8 ? configuredLoginPassword : 'Welcome123!';
 const DEMO_SITE_NAME = 'Hire Gnome ATS';
-const DEMO_THEME_KEY = 'classic_blue';
 
 const SOURCE_OPTIONS = [
 	'CareerBuilder',
@@ -988,7 +988,7 @@ async function main() {
 			data: {
 				siteName: DEMO_SITE_NAME,
 				siteTitle: DEMO_SITE_NAME,
-				themeKey: DEMO_THEME_KEY,
+				themeKey: DEFAULT_THEME_KEY,
 				careerSiteEnabled: true,
 				clientPortalEnabled: true,
 				careerHeroTitle: 'Find your next placement opportunity.',

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const crypto = require('node:crypto');
+const { DEFAULT_THEME_KEY } = require('../lib/theme-options.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -37,7 +38,7 @@ function run() {
 		instance: {
 			domain,
 			siteName,
-			theme: 'classic_blue',
+			theme: DEFAULT_THEME_KEY,
 			image: 'hire-gnome-ats:local',
 			localPort: 3000
 		},

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('node:fs');
+const { DEFAULT_THEME_KEY } = require('../lib/theme-options.cjs');
 const path = require('node:path');
 const { readHostedTrialConfig } = require('../lib/hosted-trial-config.cjs');
 const ALLOWED_USER_ROLES = new Set(['ADMINISTRATOR', 'DIRECTOR', 'RECRUITER']);
@@ -140,7 +141,7 @@ function buildEnvironment(config, resolved, configPath, outputPath) {
 		BOOTSTRAP_ADMIN_EMAIL: cleanString(config.admin?.email).toLowerCase(),
 		BOOTSTRAP_ADMIN_PASSWORD: cleanString(config.admin?.password),
 		BOOTSTRAP_SITE_NAME: config.instance.siteName,
-		BOOTSTRAP_THEME_KEY: cleanString(config.instance?.theme || 'classic_blue'),
+		BOOTSTRAP_THEME_KEY: cleanString(config.instance?.theme || DEFAULT_THEME_KEY),
 		SKIP_SYSTEM_SETTINGS_DB_DURING_BUILD: 'true',
 		HOSTED_MANAGED_INTEGRATIONS: 'true',
 		HOSTED_TRIAL_DAYS: String(config.trial?.days ?? 0),

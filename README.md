@@ -433,7 +433,7 @@ Use `.env` for:
 | `BOOTSTRAP_ADMIN_EMAIL` | empty | Email for bootstrap-provisioned admin (required when enabled). |
 | `BOOTSTRAP_ADMIN_PASSWORD` | empty | Password for bootstrap-provisioned admin (required when enabled, min 8 chars). |
 | `BOOTSTRAP_SITE_NAME` | `Hire Gnome ATS` | Initial site name created with a bootstrap-provisioned administrator. |
-| `BOOTSTRAP_THEME_KEY` | `classic_blue` | Initial theme created with a bootstrap-provisioned administrator. |
+| `BOOTSTRAP_THEME_KEY` | `navy` | Initial theme created with a bootstrap-provisioned administrator. |
 | `HOSTED_CONFIG_FILE` | empty | Optional versioned hosted-instance JSON reconciled during container startup. |
 | `HOSTED_MANAGED_INTEGRATIONS` | `false` | Hides provider-owned SMTP, OpenAI, Google Maps, and object-storage configuration from tenant administrators and blocks API updates. Generated hosted environments set this to `true`. |
 

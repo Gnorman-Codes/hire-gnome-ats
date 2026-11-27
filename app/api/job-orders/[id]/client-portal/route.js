@@ -8,7 +8,7 @@ import { isValidEmailAddress } from '@/lib/email-validation';
 import { getPublicAppBaseUrl } from '@/lib/site-url';
 import { getSystemBranding, getSystemSettingRecord } from '@/lib/system-settings';
 import { parseJsonBody, parseRouteId, ValidationError } from '@/lib/request-validation';
-import { normalizeThemeKey } from '@/lib/theme-options';
+import { normalizeThemeKey } from '@/lib/theme-options.cjs';
 
 import { withApiLogging } from '@/lib/api-logging';
 
@@ -122,6 +122,24 @@ function getClientPortalEmailPalette(themeKey) {
 				infoBg: '#f7f7f7',
 				infoBorder: '#7a7a7a',
 				infoInk: '#111111'
+			};
+		case 'navy':
+			return {
+				shellBg: '#f4f5f7',
+				cardBg: '#ffffff',
+				cardBorder: '#d6dce4',
+				headerGradient: 'linear-gradient(#15263b,#15263b)',
+				headerInk: '#ffffff',
+				headerMuted: '#dce5f0',
+				kickerInk: '#bac9dc',
+				bodyInk: '#18283b',
+				mutedInk: '#536176',
+				linkInk: '#30547a',
+				ctaBg: '#30547a',
+				ctaInk: '#ffffff',
+				infoBg: '#f1f4f8',
+				infoBorder: '#d6dce4',
+				infoInk: '#304965'
 			};
 		case 'classic_blue':
 		default:

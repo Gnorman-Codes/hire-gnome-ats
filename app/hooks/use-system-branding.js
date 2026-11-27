@@ -1,12 +1,13 @@
 'use client';
 
+import { DEFAULT_THEME_KEY } from '@/lib/theme-options.cjs';
 import { useCallback, useEffect, useState } from 'react';
 import { toBooleanFlag } from '@/lib/boolean-flag';
 
 const defaults = {
 	siteName: 'Hire Gnome ATS',
 	logoUrl: '/branding/hire-gnome.png',
-	themeKey: 'classic_blue',
+	themeKey: DEFAULT_THEME_KEY,
 	hasCustomLogo: false,
 	careerSiteEnabled: false,
 	demoMode: false

@@ -38,7 +38,7 @@ model SystemSetting {
 	recordId          String   @unique
 	siteName          String   @default("Hire Gnome ATS")
 	siteTitle         String   @default("Hire Gnome ATS")
-	themeKey          String   @default("classic_blue")
+	themeKey          String   @default("navy")
 	careerSiteEnabled Boolean  @default(false)
 	clientPortalEnabled Boolean @default(true)
 	careerHeroTitle   String?  @db.Text

@@ -6,12 +6,12 @@ import FormField from '@/app/components/form-field';
 import LoadingIndicator from '@/app/components/loading-indicator';
 import { useToast } from '@/app/components/toast-provider';
 import useSystemBranding from '@/app/hooks/use-system-branding';
-import { THEME_OPTIONS } from '@/lib/theme-options';
+import { DEFAULT_THEME_KEY, THEME_OPTIONS } from '@/lib/theme-options.cjs';
 import { isValidEmailAddress } from '@/lib/email-validation';
 
 const INITIAL_FORM = {
 	siteName: 'Hire Gnome ATS',
-	themeKey: 'classic_blue',
+	themeKey: DEFAULT_THEME_KEY,
 	firstName: '',
 	lastName: '',
 	email: '',
@@ -75,13 +75,13 @@ export default function SetupPage() {
 		if (typeof document === 'undefined') return;
 		if (!initialThemeRef.current) {
 			initialThemeRef.current =
-				String(document.documentElement.getAttribute('data-theme') || '').trim() || 'classic_blue';
+				String(document.documentElement.getAttribute('data-theme') || '').trim() || DEFAULT_THEME_KEY;
 		}
 	}, []);
 
 	useEffect(() => {
 		if (typeof document === 'undefined') return;
-		const nextTheme = String(form.themeKey || '').trim() || 'classic_blue';
+		const nextTheme = String(form.themeKey || '').trim() || DEFAULT_THEME_KEY;
 		document.documentElement.setAttribute('data-theme', nextTheme);
 	}, [form.themeKey]);
 
@@ -171,7 +171,7 @@ export default function SetupPage() {
 					detail: {
 						siteName: data.siteName || form.siteName,
 						logoUrl: data.logoUrl || '/branding/hire-gnome.png',
-						themeKey: data.themeKey || form.themeKey || 'classic_blue',
+						themeKey: data.themeKey || form.themeKey || DEFAULT_THEME_KEY,
 						hasCustomLogo: Boolean(data.hasCustomLogo)
 					}
 				})

@@ -10,7 +10,7 @@ import { isValidEmailAddress } from '@/lib/email-validation';
 import { uploadObjectBuffer, deleteObject } from '@/lib/object-storage';
 import { getOnboardingState } from '@/lib/onboarding';
 import { clearSystemSettingsCache, DEFAULT_SITE_NAME } from '@/lib/system-settings';
-import { DEFAULT_THEME_KEY, normalizeThemeKey } from '@/lib/theme-options';
+import { DEFAULT_THEME_KEY, normalizeThemeKey } from '@/lib/theme-options.cjs';
 import { ensureDefaultUnassignedDivision } from '@/lib/default-division';
 import { enforceMutationThrottle } from '@/lib/mutation-throttle';
 
