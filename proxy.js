@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import { DEMO_MODE } from '@/lib/demo-config';
 import { AUTH_SESSION_COOKIE_NAME } from '@/lib/security-constants';
 import { getHostedTrialStatus } from '@/lib/hosted-trial';
 import { getPublicAppBaseUrl } from '@/lib/site-url';
 
 const encoder = new TextEncoder();
 const REQUEST_ID_HEADER = 'x-request-id';
+const DEMO_API_REFERENCE_ORIGIN = 'https://hiregnome.com';
 
 function toBase64Url(bytes) {
 	let binary = '';
@@ -210,6 +212,23 @@ export async function proxy(req) {
   return redirectWithRequestId(new URL('/trial-expired', req.url), requestId);
  }
  if (isStaticAsset(pathname) && !pathname.startsWith('/api/')) return NextResponse.next();
+
+	if (DEMO_MODE && pathname.startsWith('/api/v1/')) {
+		const allowedOrigin = req.headers.get('origin') === DEMO_API_REFERENCE_ORIGIN;
+		const preflight = allowedOrigin && req.method === 'OPTIONS';
+		const response = preflight ? new NextResponse(null, { status: 204 }) : nextWithRequestId(forwardHeaders, requestId);
+		response.headers.append('Vary', 'Origin');
+		if (allowedOrigin) {
+			response.headers.set('Access-Control-Allow-Origin', DEMO_API_REFERENCE_ORIGIN);
+			response.headers.set('Access-Control-Expose-Headers', 'Retry-After');
+		}
+		if (preflight) {
+			response.headers.set(REQUEST_ID_HEADER, requestId);
+			response.headers.set('Access-Control-Allow-Methods', 'GET, HEAD, POST, PATCH');
+			response.headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+		}
+		return response;
+	}
 
 	const token = req.cookies.get(AUTH_SESSION_COOKIE_NAME)?.value || '';
 	const authenticatedSession = await verifySessionToken(token);
