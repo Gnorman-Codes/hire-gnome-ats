@@ -1126,6 +1126,11 @@ p {
 	margin-bottom: 1rem;
 }
 
+html[data-theme='navy'] .brand-block.has-custom-logo {
+	background: var(--panel);
+	border-color: var(--line);
+}
+
 .brand-link {
 	display: flex;
 	align-items: center;

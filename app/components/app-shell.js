@@ -376,7 +376,7 @@ export default function AppShell({ children }) {
 					>
 						<X aria-hidden="true" />
 					</button>
-					<div className="brand-block">
+					<div className={branding.hasCustomLogo ? 'brand-block has-custom-logo' : 'brand-block'}>
 						<Link href="/" className="brand-link" aria-label={`${branding.siteName} home`}>
 							<img src={branding.logoUrl} alt={branding.siteName} className="brand-logo" />
 						</Link>
