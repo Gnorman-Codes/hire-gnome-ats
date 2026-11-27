@@ -163,7 +163,7 @@ function getClientPortalEmailPalette(themeKey) {
 	}
 }
 
-function buildClientPortalInviteEmail({ siteName, logoUrl, themeKey, jobOrderTitle, clientName, contactName, portalUrl }) {
+function buildClientPortalInviteEmail({ siteName, logoUrl, hasCustomLogo, themeKey, jobOrderTitle, clientName, contactName, portalUrl }) {
 	const safeSiteName = String(siteName || 'Hire Gnome ATS').trim() || 'Hire Gnome ATS';
 	const safeJobOrderTitle = String(jobOrderTitle || 'Job Order').trim() || 'Job Order';
 	const safeClientName = String(clientName || '').trim();
@@ -171,6 +171,15 @@ function buildClientPortalInviteEmail({ siteName, logoUrl, themeKey, jobOrderTit
 	const safePortalUrl = String(portalUrl || '').trim();
 	const safeLogoUrl = String(logoUrl || '').trim();
 	const palette = getClientPortalEmailPalette(themeKey);
+	let logoMarkup = '';
+	if (safeLogoUrl) {
+		const useLogoTile = hasCustomLogo && normalizeThemeKey(themeKey) === 'navy';
+		const logoMargin = useLogoTile ? '' : 'margin:0 0 18px;';
+		const logoImage = `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(safeSiteName)}" style="display:block;max-height:40px;max-width:180px;${logoMargin}" />`;
+		logoMarkup = useLogoTile
+			? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px;"><tr><td bgcolor="${palette.cardBg}" style="padding:8px 12px;background-color:${palette.cardBg};border-radius:8px;color:${palette.bodyInk};">${logoImage}</td></tr></table>`
+			: logoImage;
+	}
 	const reviewLabel = safeClientName
 		? `${safeJobOrderTitle} at ${safeClientName}`
 		: safeJobOrderTitle;
@@ -193,7 +202,7 @@ function buildClientPortalInviteEmail({ siteName, logoUrl, themeKey, jobOrderTit
 			<div style="max-width:640px;margin:0 auto;padding:0 16px;">
 				<div style="background:${palette.cardBg};border:1px solid ${palette.cardBorder};border-radius:18px;overflow:hidden;box-shadow:0 18px 38px rgba(16,36,72,0.12);">
 					<div style="padding:28px 32px;background:${palette.headerGradient};color:${palette.headerInk};">
-						${safeLogoUrl ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(safeSiteName)}" style="display:block;max-height:40px;max-width:180px;margin:0 0 18px;" />` : ''}
+						${logoMarkup}
 						<p style="margin:0 0 10px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:${palette.kickerInk} !important;-webkit-text-fill-color:${palette.kickerInk};opacity:0.92;">
 							<span style="color:${palette.kickerInk} !important;-webkit-text-fill-color:${palette.kickerInk};">Client Review Portal</span>
 						</p>
@@ -457,6 +466,7 @@ async function patchJob_orders_id_client_portalHandler(req, { params }) {
 			const email = buildClientPortalInviteEmail({
 				siteName: branding.siteName,
 				logoUrl: branding.logoUrl ? `${baseUrl}${branding.logoUrl}` : '',
+				hasCustomLogo: branding.hasCustomLogo,
 				themeKey: branding.themeKey,
 				jobOrderTitle: jobOrder.title,
 				clientName: jobOrder.client?.name || '',
