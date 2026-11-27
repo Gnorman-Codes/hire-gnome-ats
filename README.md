@@ -39,7 +39,7 @@ When demo mode is enabled, authenticated demo users see a one-time welcome modal
 
 The default Navy theme, shown with demo data.
 
-![Hire Gnome Dashboard with key metrics, recent activity, and upcoming interviews](https://hiregnome.com/img/navy/01_dashboard.webp)
+![Hire Gnome Dashboard with the 7-Day Activity key and color-coded status badges](https://hiregnome.com/img/navy/01_dashboard.webp?v=5971b41)
 
 <details>
 <summary>Candidate detail and submission timeline</summary>
@@ -47,6 +47,13 @@ The default Navy theme, shown with demo data.
 ![Candidate detail with the profile snapshot, next step, and activity workspace](https://hiregnome.com/img/navy/02_candidate.webp)
 
 ![Full Submission Detail screen showing the demo email and client feedback on the timeline](https://hiregnome.com/img/navy/04_submission_detail.webp)
+
+</details>
+
+<details>
+<summary>Operational Reports</summary>
+
+![Operational Reports with the Daily Activity key, pipeline totals, and Owner Performance counts](https://hiregnome.com/img/navy/05_reports.webp?v=5971b41)
 
 </details>
 
