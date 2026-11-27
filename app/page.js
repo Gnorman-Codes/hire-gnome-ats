@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import LoadingIndicator from '@/app/components/loading-indicator';
+import { ActivityTrendCounts, ActivityTrendLegend } from '@/app/components/activity-trend-counts';
 
 const DASHBOARD_SECTION_PAGE_SIZE = 4;
 
@@ -103,7 +104,7 @@ function DashboardSection({ title, items, emptyMessage, onViewAll, currentPage, 
 								{item.dateValue ? <p>{item.dateLabel || 'Updated'}: {formatDateTime(item.dateValue)}</p> : null}
 							</div>
 							<div className="simple-list-actions simple-list-indicators">
-								<span className="chip dashboard-badge-chip">{item.badgeLabel || '-'}</span>
+								<span className="chip dashboard-badge-chip" data-tone={item.badgeTone}>{item.badgeLabel || '-'}</span>
 							</div>
 						</li>
 					))}
@@ -186,7 +187,7 @@ function DashboardDetailModal({ title, items, onClose }) {
 										) : null}
 									</div>
 									<div className="simple-list-actions simple-list-indicators">
-										<span className="chip dashboard-badge-chip">{item.badgeLabel || '-'}</span>
+										<span className="chip dashboard-badge-chip" data-tone={item.badgeTone}>{item.badgeLabel || '-'}</span>
 									</div>
 								</li>
 							))}
@@ -369,6 +370,7 @@ export default function HomePage() {
 
 			<article className="panel panel-spacious dashboard-trend-panel">
 				<h3>7-Day Activity</h3>
+				{!loading && overview.trend.length > 0 ? <ActivityTrendLegend /> : null}
 				{loading ? <LoadingIndicator className="list-loading-indicator" label="Loading dashboard activity" /> : null}
 				{!loading && overview.trend.length === 0 ? (
 					<div className="dashboard-empty-state">
@@ -381,13 +383,7 @@ export default function HomePage() {
 							<div key={item.dateKey} className="dashboard-trend-day">
 								<p className="dashboard-trend-day-label">{item.label}</p>
 								<p className="dashboard-trend-day-total">{item.total}</p>
-								<div className="dashboard-trend-mini-chips report-trend-chips">
-									<span className="chip report-trend-chip report-owner-chip-candidates">C {item.candidates}</span>
-									<span className="chip report-trend-chip report-owner-chip-jobs">J {item.jobOrders}</span>
-									<span className="chip report-trend-chip report-owner-chip-submissions">S {item.submissions}</span>
-									<span className="chip report-trend-chip report-owner-chip-interviews">I {item.interviews}</span>
-									<span className="chip report-trend-chip report-owner-chip-placements">P {item.placements}</span>
-								</div>
+								<ActivityTrendCounts counts={item} compact />
 							</div>
 						))}
 					</div>

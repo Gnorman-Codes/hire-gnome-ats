@@ -68,6 +68,29 @@ function toDisplayLabel(value) {
 		.join(' ');
 }
 
+function getStatusTone(status) {
+	switch (status) {
+		case 'active':
+		case 'open':
+		case 'scheduled':
+		case 'qualified':
+		case 'interview':
+		case 'offered':
+		case 'hired':
+		case 'accepted':
+			return 'positive';
+		case 'in_review':
+		case 'on_hold':
+			return 'warning';
+		case 'rejected':
+		case 'declined':
+		case 'withdrawn':
+			return 'negative';
+		default:
+			return undefined;
+	}
+}
+
 function toDayKey(date) {
 	if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
 	const year = date.getFullYear();
@@ -510,6 +533,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Requested',
 				dateValue: record.createdAt,
 				urgencyLabel: 'Client requested interview, not scheduled',
+				badgeTone: 'negative',
 				urgencyRank: 500000 + daysSince(record.createdAt, now),
 				href: `/submissions/${record.submission.id}`
 			}));
@@ -523,6 +547,7 @@ async function getDashboard_overviewHandler(req) {
 			dateLabel: 'Applied',
 			dateValue: record.createdAt,
 			urgencyLabel: 'Web response awaiting recruiter review',
+			badgeTone: 'warning',
 			urgencyRank: 400000 + daysSince(record.createdAt, now),
 			href: `/submissions/${record.id}`
 		}));
@@ -538,6 +563,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Viewed',
 				dateValue: record.lastViewedAt,
 				urgencyLabel: 'Client portal viewed, no response yet',
+				badgeTone: 'warning',
 				urgencyRank: 300000 + daysSince(record.lastViewedAt, now),
 				href: `/job-orders/${record.jobOrder.id}`
 			}));
@@ -553,6 +579,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Sent',
 				dateValue: record.lastEmailedAt,
 				urgencyLabel: 'Portal link sent, not opened',
+				badgeTone: 'warning',
 				urgencyRank: 250000 + daysSince(record.lastEmailedAt, now),
 				href: `/job-orders/${record.jobOrder.id}`
 			}));
@@ -572,6 +599,7 @@ async function getDashboard_overviewHandler(req) {
 					dateLabel: 'Submitted',
 					dateValue: record.createdAt,
 					urgencyLabel: 'Awaiting feedback for over 5 days',
+					badgeTone: 'warning',
 					urgencyRank: 200000 + daysSince(record.createdAt, now),
 					href: `/submissions/${record.id}`
 				};
@@ -586,6 +614,7 @@ async function getDashboard_overviewHandler(req) {
 					dateLabel: 'Updated',
 					dateValue: record.updatedAt,
 					urgencyLabel: 'No new submissions in the last 7 days',
+					badgeTone: 'warning',
 					urgencyRank: 100000 + daysSince(record.updatedAt, now),
 					href: `/job-orders/${record.id}`
 				};
@@ -606,6 +635,7 @@ async function getDashboard_overviewHandler(req) {
 					dateLabel: 'Updated',
 					dateValue: record.updatedAt || record.createdAt,
 					urgencyLabel: staleDays >= 5 ? 'Awaiting feedback for over 5 days' : 'Awaiting feedback follow-up',
+					badgeTone: 'warning',
 					urgencyRank: 50000 + staleDays,
 					href: `/submissions/${record.id}`
 				};
@@ -619,6 +649,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Updated',
 				dateValue: record.updatedAt,
 				urgencyLabel: 'Review pipeline health',
+				badgeTone: 'warning',
 				urgencyRank: 1000,
 				href: `/job-orders/${record.id}`
 			}))
@@ -651,6 +682,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Opened',
 				dateValue: record.openedAt || record.updatedAt,
 				urgencyLabel: 'Recent open job order',
+				badgeTone: 'positive',
 				urgencyRank: 400,
 				href: `/job-orders/${record.id}`
 			}))
@@ -684,6 +716,7 @@ async function getDashboard_overviewHandler(req) {
 				meta: record.jobOrder?.client?.name || '-',
 				dateValue: record.startsAt,
 				badgeLabel: toDisplayLabel(record.status),
+				badgeTone: getStatusTone(record.status),
 				href: `/interviews/${record.id}`
 			})),
 			awaitingFeedback: activeAwaitingFeedbackSubmissions.map((record) => ({
@@ -695,6 +728,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Updated',
 				dateValue: record.updatedAt || record.createdAt,
 				badgeLabel: 'Awaiting feedback',
+				badgeTone: 'warning',
 				href: `/submissions/${record.id}`
 			})),
 			webResponsesToReview: webResponsePriorityQueue.map((item) => ({
@@ -706,6 +740,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: item.dateLabel,
 				dateValue: item.dateValue,
 				badgeLabel: item.urgencyLabel,
+				badgeTone: item.badgeTone,
 				href: item.href
 			})),
 			clientInterviewRequests: clientPortalEnabled ? interviewRequestPriorityQueue.map((item) => ({
@@ -717,6 +752,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: item.dateLabel,
 				dateValue: item.dateValue,
 				badgeLabel: item.urgencyLabel,
+				badgeTone: item.badgeTone,
 				href: item.href
 			})) : [],
 			stalledJobs: activeStaleOpenJobOrders.map((record) => ({
@@ -728,6 +764,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Updated',
 				dateValue: record.updatedAt,
 				badgeLabel: 'No submissions in 7 days',
+				badgeTone: 'warning',
 				href: `/job-orders/${record.id}`
 			})),
 			placementsThisMonth: activePlacementsThisMonth.map((record) => ({
@@ -739,6 +776,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Offered On',
 				dateValue: record.offeredOn || record.updatedAt,
 				badgeLabel: toDisplayLabel(record.status),
+				badgeTone: getStatusTone(record.status),
 				href: `/placements/${record.id}`
 			}))
 		};
@@ -753,6 +791,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: item.dateLabel,
 				dateValue: item.dateValue,
 				badgeLabel: item.urgencyLabel,
+				badgeTone: item.badgeTone,
 				href: item.href
 			})),
 			upcomingInterviews: activeUpcomingInterviews.map((record) => ({
@@ -763,6 +802,7 @@ async function getDashboard_overviewHandler(req) {
 				meta: record.jobOrder?.client?.name || '-',
 				dateValue: record.startsAt,
 				badgeLabel: toDisplayLabel(record.status),
+				badgeTone: getStatusTone(record.status),
 				href: `/interviews/${record.id}`
 			})),
 			recentCandidates: activeRecentCandidates.map((record) => ({
@@ -774,6 +814,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Added',
 				dateValue: record.createdAt,
 				badgeLabel: toDisplayLabel(record.status),
+				badgeTone: getStatusTone(record.status),
 				href: `/candidates/${record.id}`
 			})),
 			recentJobOrders: activeRecentJobOrders.map((record) => ({
@@ -785,6 +826,7 @@ async function getDashboard_overviewHandler(req) {
 				dateLabel: 'Opened',
 				dateValue: record.openedAt || record.updatedAt,
 				badgeLabel: toDisplayLabel(record.status),
+				badgeTone: getStatusTone(record.status),
 				href: `/job-orders/${record.id}`
 			}))
 		};

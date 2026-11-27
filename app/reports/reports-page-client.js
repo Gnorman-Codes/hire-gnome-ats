@@ -3,6 +3,7 @@
 import { Download, LoaderCircle, Play, RotateCcw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import LoadingIndicator from '@/app/components/loading-indicator';
+import { ActivityTrendCounts, ActivityTrendLegend } from '@/app/components/activity-trend-counts';
 import { useToast } from '@/app/components/toast-provider';
 import ReportPipelinePanel from '@/app/components/reports/report-pipeline-panel';
 import ReportOwnerPerformancePanel from '@/app/components/reports/report-owner-performance-panel';
@@ -401,6 +402,7 @@ export default function ReportsPage() {
 
 					<article className="panel panel-spacious">
 						<h3>Daily Activity Trend</h3>
+						{trendRows.length > 0 ? <ActivityTrendLegend /> : null}
 						{trendRows.length === 0 ? <p className="panel-subtext">No records yet.</p> : null}
 						{trendRows.length > 0 ? (
 							<div className="report-trend-list">
@@ -416,13 +418,7 @@ export default function ReportsPage() {
 												style={{ width: `${Math.max(6, (Number(item.total || 0) / trendMax) * 100)}%` }}
 											/>
 										</div>
-										<div className="report-trend-chips">
-											<span className="chip report-trend-chip report-owner-chip-candidates">C {item.candidates}</span>
-											<span className="chip report-trend-chip report-owner-chip-jobs">J {item.jobOrders}</span>
-											<span className="chip report-trend-chip report-owner-chip-submissions">S {item.submissions}</span>
-											<span className="chip report-trend-chip report-owner-chip-interviews">I {item.interviews}</span>
-											<span className="chip report-trend-chip report-owner-chip-placements">P {item.placements}</span>
-										</div>
+									<ActivityTrendCounts counts={item} />
 									</div>
 								))}
 							</div>
